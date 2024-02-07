@@ -1,0 +1,25 @@
+{
+"dialogueEntries": [
+{
+  "Name": "Aoko",
+  "Dialogue": "I couldn't sleep well at all from the dog barking all night. Ah, it was a terrible night. Waow",
+  "Commands": ""
+},
+{
+  "Name": "Alice",
+  "Dialogue": "That's a shame",
+  "Commands": ""
+},
+{
+    "Name": "-END-",
+    "Dialogue": "",
+    "Commands": ""
+},
+{
+    "Name": "",
+    "Dialogue": "",
+    "Commands": ""
+}
+]
+}
+  
