@@ -14,38 +14,37 @@ public class DialogueSystem : MonoBehaviour
     private bool displayTextFinished=false;
     private bool chapterEnd=false;
 
+    DialogueEntry[] currentChapter;
+
     void Start(){
-        
+        currentChapter = readFile(chapter1);
     }
 
     // Update is called once per frame
     void Update(){
-        readFile();
     }
 
-    private void readFile(){
-        string jsonText = chapter1.text;
-
+    //reads in a chapter file and returns a list of name/text/command entries
+    private DialogueEntry[] readFile(TextAsset file){
+        string jsonText = file.text;
         DialogueDataWrapper wrapper = JsonUtility.FromJson<DialogueDataWrapper>(jsonText);
 
         // Process the dialogue entries
         foreach (DialogueEntry entry in wrapper.dialogueEntries)
         {
-            Debug.Log("Name: " + entry.Name);
-            Debug.Log("Dialogue: " + entry.Dialogue);
-            Debug.Log("Commands: " + entry.Commands);
+            Debug.Log(entry.Name+": " + entry.Dialogue);
+            // Debug.Log("Commands: " + entry.Commands);
         }
+        return wrapper.dialogueEntries;
     }
 
     [System.Serializable]
-    public class DialogueDataWrapper
-    {
+    public class DialogueDataWrapper{
         public DialogueEntry[] dialogueEntries;
     }
 
     [System.Serializable]
-    public class DialogueEntry
-    {
+    public class DialogueEntry{
         public string Name;
         public string Dialogue;
         public string Commands;
