@@ -596,7 +596,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Aozaki looked at the wall clock in dismay. '
+  m_text: Aozaki looked at the wall clock in dismay.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4bfed06cbc149214ca4ffecde8e03311, type: 2}
   m_sharedMaterial: {fileID: 2734198372869821490, guid: 4bfed06cbc149214ca4ffecde8e03311, type: 2}
@@ -802,5 +802,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2edf7a519453f145ae4b902909a6add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  value: 0
+  DialogueObject: {fileID: 1041983444}
   chapter1: {fileID: 4900000, guid: c92659bd5e6d47f4780d3c148a9a1f6b, type: 3}

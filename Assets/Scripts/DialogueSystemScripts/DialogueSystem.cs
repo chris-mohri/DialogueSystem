@@ -2,25 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using TMPro;
 
 public class DialogueSystem : MonoBehaviour
 {
-    // Start is called before the first frame update
-    public int value;
-    // public string chapter1;
 
     public PlayerControls controls;
-
-    public TextAsset chapter1;
-
     private bool displayTextFinished=false;
     private bool chapterEnd=false;
 
+    [SerializeField]
+    private GameObject DialogueObject;
+    private TMP_Text textObject;
+
     DialogueEntry[] currentChapterEntries;
+
+    //ADD ALL CHAPTERS HERE
+    public TextAsset chapter1;
 
     void Awake(){
         //creates the player controls
         controls = new PlayerControls();
+        textObject = DialogueObject.GetComponent<TMP_Text>();
     }
 
     void Start(){
@@ -39,6 +42,10 @@ public class DialogueSystem : MonoBehaviour
         if (controls.Keyboard.Continue.triggered){
             Debug.Log("asdf");
         }
+
+        textObject.maxVisibleCharacters=9;
+        Debug.Log(textObject.textInfo.lineCount);
+
     }
 
     //reads in a chapter file and returns a list of name/text/command entries
