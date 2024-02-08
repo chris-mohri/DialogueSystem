@@ -9,19 +9,36 @@ public class DialogueSystem : MonoBehaviour
     public int value;
     // public string chapter1;
 
+    public PlayerControls controls;
+
     public TextAsset chapter1;
 
     private bool displayTextFinished=false;
     private bool chapterEnd=false;
 
-    DialogueEntry[] currentChapter;
+    DialogueEntry[] currentChapterEntries;
+
+    void Awake(){
+        //creates the player controls
+        controls = new PlayerControls();
+    }
 
     void Start(){
-        currentChapter = readFile(chapter1);
+        currentChapterEntries = readFile(chapter1);
+    }
+
+    private void OnEnable(){
+        controls.Enable();
+    }
+    private void OnDisable(){
+        controls.Disable();
     }
 
     // Update is called once per frame
     void Update(){
+        if (controls.Keyboard.Continue.triggered){
+            Debug.Log("asdf");
+        }
     }
 
     //reads in a chapter file and returns a list of name/text/command entries
@@ -33,7 +50,7 @@ public class DialogueSystem : MonoBehaviour
         foreach (DialogueEntry entry in wrapper.dialogueEntries)
         {
             Debug.Log(entry.Name+": " + entry.Dialogue);
-            // Debug.Log("Commands: " + entry.Commands);
+            Debug.Log(entry.VoiceFile+": " + entry.Commands);
         }
         return wrapper.dialogueEntries;
     }
@@ -47,6 +64,7 @@ public class DialogueSystem : MonoBehaviour
     public class DialogueEntry{
         public string Name;
         public string Dialogue;
+        public string VoiceFile;
         public string Commands;
     }
 

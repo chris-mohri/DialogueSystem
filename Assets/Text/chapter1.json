@@ -3,21 +3,25 @@
 {
     "Name": "Aoko",
     "Dialogue": "I couldn't sleep well at all from the dog barking all night. Ah, it was a terrible night. Waow",
-    "Commands": ""
+    "VoiceFile": "test1",
+    "Commands": "cc"
 },
 {
     "Name": "Alice",
     "Dialogue": "That's a shame",
-    "Commands": ""
+    "Voice File": "test2",
+    "Commands": "dd"
 },
 {
     "Name": "-END-",
     "Dialogue": "",
+    "Voice File": "",
     "Commands": ""
 },
 {
-    "Name": "",
+    "Name": "-CLEAR-",
     "Dialogue": "",
+    "VoiceFile": "",
     "Commands": ""
 }
 ]
