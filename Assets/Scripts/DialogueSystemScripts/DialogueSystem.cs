@@ -44,9 +44,7 @@ public class DialogueSystem : MonoBehaviour
     void Start(){
         //creates the book
         book = new Book();
-        book.loadChapter(chapter1);
-
-        Debug.Log(book.currentRoute[book.bookmark].name);
+        book.LoadChapter(chapter1);
 
     }
 
@@ -85,34 +83,66 @@ public class DialogueSystem : MonoBehaviour
     [System.Serializable]
     public class Book{
         //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
-        public Dictionary<string, List<DialogueEntry>> currentChapter;
+        private Dictionary<string, List<DialogueEntry>> currentChapter;
         //the list of entries of the current route
-        public List<DialogueEntry> currentRoute;
-        public int bookmark=0;
+        private List<DialogueEntry> currentRoute;
+        private int bookmark=0;
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
         }
 
         //reads in a chapter file and returns a list of name/text/.../command entries
-        public void loadChapter(TextAsset file){
+        public void LoadChapter(TextAsset file){
             string jsonText = file.text;
             DialogueWrapper wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
 
-            // Process the dialogue entries
+            //for debugging
+            // foreach (DialogueEntry entry in wrapper.dialogueEntries)
+            // {
+            //     Debug.Log(entry.name+": " + entry.dialogue);
+            //     Debug.Log(entry.voiceFile+": " + entry.commands);
+            // }
+
+            LoadIntoDictionary(wrapper);
+        }
+
+        public void LoadIntoDictionary(DialogueWrapper wrapper){
+            //create dictionary based on the different routes of each entry
             foreach (DialogueEntry entry in wrapper.dialogueEntries)
             {
-                Debug.Log(entry.name+": " + entry.dialogue);
-                Debug.Log(entry.voiceFile+": " + entry.commands);
+                //if route is not in the dictionary yet, add it
+                if (!currentChapter.ContainsKey(entry.route)){
+                currentChapter[entry.route] = new List<DialogueEntry>();
+                }
+                //add the entry to that route
+                currentChapter[entry.route].Add(entry);
+                    
             }
-            currentRoute = wrapper.dialogueEntries;
+
+            currentRoute = currentChapter["1"];
         }
 
         //moves the current route to another route or another entry (part of the route)
-        public void jumpTo(string route, int part=0){
+        public void JumpTo(string route, int part=0){
             currentRoute = currentChapter[route];
             bookmark=part;
         }
+
+        public List<DialogueEntry> getCurrentRoute(){
+            return currentRoute;
+        }
+        public DialogueEntry getCurrentEntry(){
+            return currentRoute[bookmark];
+        }
+
+        public void setBookmark(int num){
+            bookmark = num;
+        }
+        public int getBookmark(){
+            return bookmark;
+        }
+
     }
 
 }
