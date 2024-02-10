@@ -66,18 +66,31 @@ public class DialogueSystem : MonoBehaviour
 
     }
 
+// ============== INNER CLASSES =========================================
+
+//required for deserializing json
+//In the .json file, must look like  { dialogueEntries: [ {entry1}, {entry2}, {...} ] }
     [System.Serializable]
     public class DialogueWrapper{
         public List<DialogueEntry> dialogueEntries;
     }
-
+    //required for deserializing json as described above
+    //each entry must have these fields
     [System.Serializable]
     public class DialogueEntry{
         public string name;
         public string dialogue;
         public string route;
         public string voiceFile;
-        public string commands;
+
+        public string commands; //might be beyond scope of dialogue system
+        //example 
+        /*
+        .swap Aoko Aoko_happy
+            swaps the sprite of the gameObject with the name "Aoko" to "Aoko_happy"
+        .move Aoko left 100 2
+            moves gameObject with the name "Aoko" to the left 100 pixels within 2 seconds
+        */
     }
 
     [System.Serializable]

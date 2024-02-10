@@ -17,14 +17,14 @@
     {
         "name": "-END-",
         "dialogue": "",
-        "route": "1",
+        "route": "2",
         "voiceFile": "",
         "commands": ""
     },
     {
         "name": "-CLEAR-",
         "dialogue": "",
-        "route": "1",
+        "route": "2",
         "voiceFile": "",
         "Commands": ""
     }
