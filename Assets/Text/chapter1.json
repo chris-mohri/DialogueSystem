@@ -1,31 +1,31 @@
 {
     "dialogueEntries": [
     {
-        "Name": "Aoko",
-        "Dialogue": "I couldn't sleep well at all from the dog barking all night. Ah, it was a terrible night. Waow",
-        "Route":1,
-        "VoiceFile": "test1",
-        "Commands": "cc"
+        "name": "Aoko",
+        "dialogue": "I couldn't sleep well at all from the dog barking all night.",
+        "route": "1",
+        "voiceFile": "test1.mp3",
+        "commands": ".swap .sprite annoyed"
     },
     {
-        "Name": "Alice",
-        "Dialogue": "That's a shame",
-        "Route":1,
-        "VoiceFile": "test2",
-        "Commands": "dd"
+        "name": "Alice",
+        "dialogue": "That's a shame",
+        "route": "1",
+        "voiceFile": "test2",
+        "commands": "dd"
     },
     {
-        "Name": "-END-",
-        "Dialogue": "",
-        "Route":1,
-        "VoiceFile": "",
-        "Commands": ""
+        "name": "-END-",
+        "dialogue": "",
+        "route": "1",
+        "voiceFile": "",
+        "commands": ""
     },
     {
-        "Name": "-CLEAR-",
-        "Dialogue": "",
-        "Route":1,
-        "VoiceFile": "",
+        "name": "-CLEAR-",
+        "dialogue": "",
+        "route": "1",
+        "voiceFile": "",
         "Commands": ""
     }
     ]

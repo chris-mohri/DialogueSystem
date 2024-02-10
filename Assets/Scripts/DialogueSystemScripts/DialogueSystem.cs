@@ -11,23 +11,43 @@ public class DialogueSystem : MonoBehaviour
     private bool displayTextFinished=false;
     private bool chapterEnd=false;
 
+    //the dialogue object that has the text component
     [SerializeField]
     private GameObject DialogueObject;
-    private TMP_Text textObject;
+    //the text component to the DialogueObject
+    private TMP_Text text;
 
-    DialogueEntry[] currentChapterEntries;
+    //number of lines that the text occupies on screen
+    //search by text.textInfo.lineCount
+    public int maxLines = 20;
+    private int currentShownCharacter=0;
+    private int currentTotalCharacters=0;
 
-    //ADD ALL CHAPTERS HERE
+    //the main data object that holds the dialogue information
+    private Book book;
+
+
+    //================== CHAPTERS ===========================================================
+
+    //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
     public TextAsset chapter1;
+
+    // =======================================================================================
 
     void Awake(){
         //creates the player controls
         controls = new PlayerControls();
-        textObject = DialogueObject.GetComponent<TMP_Text>();
+        //gets the text component from the DialogueObject
+        text = DialogueObject.GetComponent<TMP_Text>();
     }
 
     void Start(){
-        currentChapterEntries = readFile(chapter1);
+        //creates the book
+        book = new Book();
+        book.loadChapter(chapter1);
+
+        Debug.Log(book.currentRoute[book.bookmark].name);
+
     }
 
     private void OnEnable(){
@@ -43,37 +63,56 @@ public class DialogueSystem : MonoBehaviour
             Debug.Log("asdf");
         }
 
-        textObject.maxVisibleCharacters=9;
-        //Debug.Log(textObject.textInfo.lineCount);
+        text.maxVisibleCharacters=9;
+        //Debug.Log(text.textInfo.lineCount);
 
-    }
-
-    //reads in a chapter file and returns a list of name/text/command entries
-    private DialogueEntry[] readFile(TextAsset file){
-        string jsonText = file.text;
-        DialogueDataWrapper wrapper = JsonUtility.FromJson<DialogueDataWrapper>(jsonText);
-
-        // Process the dialogue entries
-        foreach (DialogueEntry entry in wrapper.dialogueEntries)
-        {
-            Debug.Log(entry.Name+": " + entry.Dialogue);
-            Debug.Log(entry.VoiceFile+": " + entry.Commands);
-        }
-        return wrapper.dialogueEntries;
     }
 
     [System.Serializable]
-    public class DialogueDataWrapper{
-        public DialogueEntry[] dialogueEntries;
+    public class DialogueWrapper{
+        public List<DialogueEntry> dialogueEntries;
     }
 
     [System.Serializable]
     public class DialogueEntry{
-        public string Name;
-        public string Dialogue;
-        public int Route;
-        public string VoiceFile;
-        public string Commands;
+        public string name;
+        public string dialogue;
+        public string route;
+        public string voiceFile;
+        public string commands;
+    }
+
+    [System.Serializable]
+    public class Book{
+        //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
+        public Dictionary<string, List<DialogueEntry>> currentChapter;
+        //the list of entries of the current route
+        public List<DialogueEntry> currentRoute;
+        public int bookmark=0;
+
+        public Book(){
+            currentChapter = new Dictionary<string, List<DialogueEntry>>();
+        }
+
+        //reads in a chapter file and returns a list of name/text/.../command entries
+        public void loadChapter(TextAsset file){
+            string jsonText = file.text;
+            DialogueWrapper wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
+
+            // Process the dialogue entries
+            foreach (DialogueEntry entry in wrapper.dialogueEntries)
+            {
+                Debug.Log(entry.name+": " + entry.dialogue);
+                Debug.Log(entry.voiceFile+": " + entry.commands);
+            }
+            currentRoute = wrapper.dialogueEntries;
+        }
+
+        //moves the current route to another route or another entry (part of the route)
+        public void jumpTo(string route, int part=0){
+            currentRoute = currentChapter[route];
+            bookmark=part;
+        }
     }
 
 }
