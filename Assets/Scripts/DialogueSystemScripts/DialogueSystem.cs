@@ -44,7 +44,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         textObject.maxVisibleCharacters=9;
-        Debug.Log(textObject.textInfo.lineCount);
+        //Debug.Log(textObject.textInfo.lineCount);
 
     }
 
@@ -71,6 +71,7 @@ public class DialogueSystem : MonoBehaviour
     public class DialogueEntry{
         public string Name;
         public string Dialogue;
+        public int Route;
         public string VoiceFile;
         public string Commands;
     }
