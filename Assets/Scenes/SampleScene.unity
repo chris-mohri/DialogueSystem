@@ -596,10 +596,14 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Aozaki looked at the wall clock in dismay.
+  m_text: "<color=#fefefe><alpha=#68>Aozaki looked  at the wall clock in dismay.
+    \nShe didn't know how to respond to Alice's retort, feeling a pang of guilt before
+    looking directly into her eyes. <alpha=#FF></color>All it takes is one mistake
+    to turn into a hundred mistakes, but that is a chance that she was not willing
+    to take. []\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 4bfed06cbc149214ca4ffecde8e03311, type: 2}
-  m_sharedMaterial: {fileID: 2734198372869821490, guid: 4bfed06cbc149214ca4ffecde8e03311, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
+  m_sharedMaterial: {fileID: -6704820290539167338, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -623,8 +627,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
-  m_fontSizeBase: 40
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -803,4 +807,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DialogueObject: {fileID: 1041983444}
+  maxLines: 20
   chapter1: {fileID: 4900000, guid: c92659bd5e6d47f4780d3c148a9a1f6b, type: 3}

@@ -17,7 +17,7 @@ public class DialogueSystem : MonoBehaviour
     //the text component to the DialogueObject
     private TMP_Text text;
 
-    //number of lines that the text occupies on screen
+    //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
     public int maxLines = 20;
     private int currentShownCharacter=0;
@@ -26,9 +26,7 @@ public class DialogueSystem : MonoBehaviour
     //the main data object that holds the dialogue information
     private Book book;
 
-
     //================== CHAPTERS ===========================================================
-
     //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
     public TextAsset chapter1;
 
@@ -99,6 +97,7 @@ public class DialogueSystem : MonoBehaviour
         private Dictionary<string, List<DialogueEntry>> currentChapter;
         //the list of entries of the current route
         private List<DialogueEntry> currentRoute;
+        //saves the index for the current dialogueEntry in currentRoute
         private int bookmark=0;
 
         public Book(){
@@ -133,6 +132,7 @@ public class DialogueSystem : MonoBehaviour
                     
             }
 
+            //sets the current route of this chapter to the 1st (default) route
             currentRoute = currentChapter["1"];
         }
 
@@ -145,6 +145,7 @@ public class DialogueSystem : MonoBehaviour
         public List<DialogueEntry> getCurrentRoute(){
             return currentRoute;
         }
+
         public DialogueEntry getCurrentEntry(){
             return currentRoute[bookmark];
         }
@@ -157,5 +158,12 @@ public class DialogueSystem : MonoBehaviour
         }
 
     }
+
+    /*
+    1. get text to appear on screen
+    2. log system
+    3. choice system
+    4. hide button 
+    */
 
 }
