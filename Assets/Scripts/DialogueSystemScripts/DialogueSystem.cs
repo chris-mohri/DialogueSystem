@@ -160,7 +160,7 @@ public class DialogueSystem : MonoBehaviour
     }
 
     /*
-    1. get text to appear on screen
+    1. get text to appear on screen + lower alpha of previous entries + add blinking marker at end
     2. log system
     3. choice system
     4. hide button 
