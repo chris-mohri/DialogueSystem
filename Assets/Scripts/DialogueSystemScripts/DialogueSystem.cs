@@ -7,9 +7,15 @@ using TMPro;
 public class DialogueSystem : MonoBehaviour
 {
 
+    //controls for the dialogue system
     public PlayerControls controls;
-    private bool displayTextFinished=false;
+
+    //display variables
+    //true if the letters of the current entry are still being displayed 1 by 1, false if finished
+    private bool stillDisplaying=false;
     private bool chapterEnd=false;
+    //blinks at the end of the current entry
+    private string endCharacter = "[]";
 
     //the dialogue object that has the text component
     [SerializeField]
@@ -56,10 +62,14 @@ public class DialogueSystem : MonoBehaviour
     // Update is called once per frame
     void Update(){
         if (controls.Keyboard.Continue.triggered){
-            Debug.Log("asdf");
+            Debug.Log("continue to next entry");
+
+            //if clicked while stillDisplaying, set maxVisibleCharacters to max
+
         }
 
-        text.maxVisibleCharacters=9;
+        // ========== add text to screen ==========
+        //text.maxVisibleCharacters=9;
         //Debug.Log(text.textInfo.lineCount);
 
     }
