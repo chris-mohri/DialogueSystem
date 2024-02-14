@@ -69,6 +69,9 @@ public class DialogueSystem : MonoBehaviour
         }
 
         // ========== add text to screen ==========
+
+        // also lower opacity of previous entries
+        // check if lines have exceeded maxLines
         //text.maxVisibleCharacters=9;
         //Debug.Log(text.textInfo.lineCount);
 
