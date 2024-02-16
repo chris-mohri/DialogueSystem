@@ -104,6 +104,10 @@ public class DialogueSystem : MonoBehaviour
         // check if lines have exceeded maxLines
         //text.maxVisibleCharacters=9;
         //Debug.Log(text.textInfo.lineCount);
+
+        /*
+        <color=#aaaaaa><alpha=#b8>
+        */
     }
 
     void handleTimer(){

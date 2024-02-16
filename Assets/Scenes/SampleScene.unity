@@ -596,11 +596,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<color=#aaaaaa><alpha=#b8>Aozaki looked  at the wall clock in dismay.
-    \nShe didn't know how to respond to Alice's retort, feeling a pang of guilt before
-    looking directly into her eyes. <alpha=#FF></color>All it takes is one mistake
-    to turn into a hundred mistakes, but that is a chance that she was not willing
-    to take. []\n"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
   m_sharedMaterial: {fileID: -6704820290539167338, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
