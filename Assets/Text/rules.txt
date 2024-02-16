@@ -1,0 +1,2 @@
+1. to denote the end of a chapter, make another entry and set the name to ".END" (you can leave everything else empty)
+2. 

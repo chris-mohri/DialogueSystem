@@ -56,7 +56,7 @@ Material:
     - _ColorMask: 15
     - _CullMode: 0
     - _Diffuse: 0.5
-    - _FaceDilate: 0.15
+    - _FaceDilate: 0.2
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
     - _GlowInner: 0.05
@@ -74,8 +74,8 @@ Material:
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
     - _ScaleRatioA: 0.8333333
-    - _ScaleRatioB: 0.5520833
-    - _ScaleRatioC: 0.5520833
+    - _ScaleRatioB: 0.5104167
+    - _ScaleRatioC: 0.5104167
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
     m_PointSize: 41
     m_Scale: 1
     m_UnitsPerEM: 1000
-    m_LineHeight: 49.364002
+    m_LineHeight: 65
     m_AscentLine: 37.638
     m_CapLine: 28
     m_MeanLine: 21

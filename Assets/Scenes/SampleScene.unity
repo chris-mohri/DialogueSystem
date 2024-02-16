@@ -596,7 +596,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<color=#cccccc><alpha=#68>Aozaki looked  at the wall clock in dismay.
+  m_text: "<color=#aaaaaa><alpha=#b8>Aozaki looked  at the wall clock in dismay.
     \nShe didn't know how to respond to Alice's retort, feeling a pang of guilt before
     looking directly into her eyes. <alpha=#FF></color>All it takes is one mistake
     to turn into a hundred mistakes, but that is a chance that she was not willing
@@ -627,8 +627,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38
-  m_fontSizeBase: 38
+  m_fontSize: 44
+  m_fontSizeBase: 44
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -663,7 +663,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -713.638, y: -454.4038, z: -763.4292, w: -454.75125}
+  m_margin: {x: -756.47815, y: -454.4038, z: -786.27686, w: -454.75125}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

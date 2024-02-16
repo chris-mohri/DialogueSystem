@@ -1,33 +1,130 @@
 {
-    "dialogueEntries": [
+    "dialogueEntries":[
     {
-        "name": "Aoko",
-        "dialogue": "I couldn't sleep well at all from the dog barking all night.",
-        "route": "1",
-        "voiceFile": "test1.mp3",
-        "commands": ".swap .sprite annoyed"
-    },
-    {
-        "name": "Alice",
-        "dialogue": "That's a shame",
-        "route": "1",
-        "voiceFile": "test2",
-        "commands": "dd"
-    },
-    {
-        "name": "-END-",
-        "dialogue": "",
-        "route": "2",
+        "name": "",
+        "dialogue": "Two hours had passed and the clock struck nine.",
+        "route": 1,
         "voiceFile": "",
         "commands": ""
     },
     {
-        "name": "-CLEAR-",
-        "dialogue": "",
-        "route": "2",
+        "name": "",
+        "dialogue": "\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.",
+        "route": 1,
         "voiceFile": "",
-        "Commands": ""
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "\"To be honest, I didn't really want to leave it to Tobimaru like this.\"",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "A hot earthenware pot sat on the table.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "Aoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "Tonight they were eating a traditional Japanese meal that looked out of place in this mansion.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "When it came to the kind of Japanese hotpot where all one had to do was buy and boil ingredients, it was usually Aoko's responsibility.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "Alice sat across from Aoko as she silently poked at the pot with a fork.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "\"Yamasiro made it a point to say that Sizuki hadn't joined a club. It's not like I have the time or energy to keep track of every single student.\"",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "The egg she had plucked was still as silky as a baby's bottom, so she returned it to the pot.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "She settled for the shirataki noodles instead.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "\"I already know that the idiot is constantly busy with his jobs.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "That's why I tried my best to set him up with a club activity captain that'd be accommodating.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "But the nerve of the guy, not even a thanks.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "Aoko",
+        "dialogue": "Are you even listening, Alice?\"",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "As if her mouth was full, she simply nodded in response.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": "",
+        "dialogue": "Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
+    },
+    {
+        "name": ".END",
+        "dialogue": "",
+        "route": 1,
+        "voiceFile": "",
+        "commands": ""
     }
-    ]
+]
 }
-      

@@ -21,7 +21,7 @@ public class DialogueSystem : MonoBehaviour
     [SerializeField]
     private GameObject DialogueObject;
     //the text component to the DialogueObject
-    private TMP_Text text;
+    private TMP_Text textObj;
 
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
@@ -29,8 +29,14 @@ public class DialogueSystem : MonoBehaviour
     private int currentShownCharacter=0;
     private int currentTotalCharacters=0;
 
+    //keeps track of time 
+    private float currentTime = 0.0f;
+    private float displayTimer = 0.0f;
+    private float displaySpeed = 0.01f;
+
     //the main data object that holds the dialogue information
     private Book book;
+    private string endName = ".END";
 
     //================== CHAPTERS ===========================================================
     //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
@@ -42,7 +48,7 @@ public class DialogueSystem : MonoBehaviour
         //creates the player controls
         controls = new PlayerControls();
         //gets the text component from the DialogueObject
-        text = DialogueObject.GetComponent<TMP_Text>();
+        textObj = DialogueObject.GetComponent<TMP_Text>();
     }
 
     void Start(){
@@ -61,20 +67,50 @@ public class DialogueSystem : MonoBehaviour
 
     // Update is called once per frame
     void Update(){
+        //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
-            Debug.Log("continue to next entry");
+            //Debug.Log("continue to next entry");
 
-            //if clicked while stillDisplaying, set maxVisibleCharacters to max
+            //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
+            if (currentShownCharacter < currentTotalCharacters) {
+                currentShownCharacter = currentTotalCharacters;
+            } else { //otherwise start displaying the next entry
+                //adds words to the dialogue box (they start as invisible)
+                string text = book.getCurrentEntryAndIncrement().dialogue;
+                if (text.Length>=2){
+                    if (text.Substring(0,2)!="\n"){
+                        text = " "+ text;
+                    }
+                }
+
+                textObj.text += text;
+            }
 
         }
 
-        // ========== add text to screen ==========
+        //display the letters
+        addTextToScreen();
 
+        //update timer
+        handleTimer();
+
+    }
+
+    void addTextToScreen(){
+        if (displayTimer==0){
+
+        }
         // also lower opacity of previous entries
         // check if lines have exceeded maxLines
         //text.maxVisibleCharacters=9;
         //Debug.Log(text.textInfo.lineCount);
+    }
 
+    void handleTimer(){
+        displayTimer += Time.deltaTime;
+        if (displayTimer >= displaySpeed) {
+            displayTimer=0;
+        }
     }
 
 // ============== INNER CLASSES =========================================
@@ -112,6 +148,8 @@ public class DialogueSystem : MonoBehaviour
         private List<DialogueEntry> currentRoute;
         //saves the index for the current dialogueEntry in currentRoute
         private int bookmark=0;
+        //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
+        private string endName = ".END";
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
@@ -163,11 +201,30 @@ public class DialogueSystem : MonoBehaviour
             return currentRoute[bookmark];
         }
 
+        public DialogueEntry getCurrentEntryAndIncrement(){
+            DialogueEntry entry = currentRoute[bookmark];
+
+            //if the current entry was NOT the end of the chapter, then move the bookmark to the next entry
+            if (entry.name!=endName){
+                bookmark++;
+            }
+
+            return entry;
+        }
+
+        public DialogueEntry getEntry(int i){
+            return currentRoute[i];
+        }
+
         public void setBookmark(int num){
             bookmark = num;
         }
         public int getBookmark(){
             return bookmark;
+        }
+
+        public bool isEnd(){
+            return false;
         }
 
     }
