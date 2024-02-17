@@ -25,17 +25,29 @@ public class DialogueSystem : MonoBehaviour
 
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
+
+    //text display/animation variables
     public int maxLines = 20;
+    private int currentCharIndex=0;
     private int currentShownCharacters=0;
     private int currentTotalCharacters=0;
     private int currentDeployedAlphas=0;
     private int maxDeployedAlphas=5;
     private ArrayList alphaIndex;
+    private Dictionary<string, string> alphaDict;
+    [SerializeField]
+    private int alphaIncrement = 5;
+    private string aTag1 = "<alpha=#10>"; //11 length
+    private int aTagLength;
 
     //keeps track of time 
     private float currentTime = 0.0f;
     private float displayTimer = 0.0f;
-    private float displaySpeed = 0.02f;
+    [SerializeField]
+    private float displaySpeed = 0.02f; //adjust as needed
+    private float fadeTimer = 0.0f;
+    [SerializeField]
+    private float fadeSpeed = 0.01f; //adjust as needed
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -61,6 +73,10 @@ public class DialogueSystem : MonoBehaviour
         book = new Book();
         book.LoadChapter(chapter1);
 
+        //gets the alpha dictionary (controls the opacity increments when fading in letters)
+        alphaDict = getAlphaDict();
+        aTagLength = aTag1.Length;
+
     }
 
     private void OnEnable(){
@@ -77,32 +93,40 @@ public class DialogueSystem : MonoBehaviour
             //Debug.Log("continue to next entry");
 
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
-            if (currentShownCharacters < currentTotalCharacters) {
-                currentShownCharacters = currentTotalCharacters;
-                textObj.maxVisibleCharacters = currentTotalCharacters;
+            if (currentShownCharacters < textObj.textInfo.characterCount) {
+                currentShownCharacters = textObj.textInfo.characterCount;
+                textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
             } else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
                 string text = book.getCurrentEntryAndIncrement().dialogue;
                 if (text.Length>=2){
-                    if (text.Substring(0,2)!="\n"){
+                    //automatically adds a space between sentences when not on a new line
+                    if (text.Substring(0,2)!="\n" && textObj.text.Length!=0){
                         text = " "+ text;
                     }
                 }
                 //add the text to the textObj
                 textObj.text += text;
+                // check if lines have exceeded maxLines
+                // TODO
 
                 //handle letters
-                currentTotalCharacters = textObj.text.Length;
+                // currentTotalCharacters = textObj.textInfo.characterCount;
                 textObj.maxVisibleCharacters=currentShownCharacters;
 
+                // Debug.Log(textObj.textInfo.characterCount);
                 // Debug.Log(currentTotalCharacters);
                 // Debug.Log(textObj.maxVisibleCharacters);
+                // Debug.Log(currentShownCharacters);
                 // Debug.Log(textObj.text.Length);
                 // Debug.Log("====");
             }
 
         }
-        
+        // Debug.Log(textObj.textInfo.characterCount);
+        // textObj.maxVisibleCharacters=4;
+        // Debug.Log(textObj.textInfo.characterCount);
+        // Debug.Log(textObj.text.Length);
 
         //display the letters
         addTextToScreen();
@@ -113,20 +137,29 @@ public class DialogueSystem : MonoBehaviour
     }
 
     void addTextToScreen(){
-        if (displayTimer==0){
-            if (currentShownCharacters<currentTotalCharacters){
-                currentShownCharacters+=1;
-                textObj.maxVisibleCharacters=currentShownCharacters;
-
-                //set its alpha to 0.2 (also shift all elements to the right 1)
-                alphaIndex.Add(currentShownCharacters);
-                textObj.text=textObj.text.Insert(currentShownCharacters-1, "|");
-                currentShownCharacters++;
-                currentTotalCharacters++;
-                textObj.maxVisibleCharacters++;
-
+        
+        //in a faster timer, update every alpha tag in the arraylist, removing tags that reach 100%
+        if (fadeTimer == 0){
+            foreach (int index in alphaIndex){
+                string newTag = alphaDict[textObj.text.Substring(index, 11)];
+                //if the new tag is 100% alpha (opacity), then just remove it
+                
             }
         }
+
+        if (displayTimer==0){
+            if (currentShownCharacters<textObj.textInfo.characterCount){
+                currentShownCharacters+=1;
+                currentCharIndex+=1;
+                textObj.maxVisibleCharacters=currentShownCharacters;
+
+                //add this index to the list
+                alphaIndex.Add(currentCharIndex);
+                textObj.text=textObj.text.Insert(currentCharIndex-1, aTag1);
+                currentCharIndex+=11;
+            }
+        }
+
         // also lower opacity of previous entries
         // check if lines have exceeded maxLines
         //text.maxVisibleCharacters=9;
@@ -137,14 +170,29 @@ public class DialogueSystem : MonoBehaviour
         /*
         <color=#aaaaaa> 15
         <alpha=#b8> 11
+        <alpha=20> 10
         */
     }
 
     void handleTimer(){
         displayTimer += Time.deltaTime;
+        fadeTimer += Time.deltaTime;
         if (displayTimer >= displaySpeed) {
-            displayTimer=0;
+            displayTimer = 0;
         }
+        if (fadeTimer >= fadeSpeed) {
+            fadeTimer = 0;
+        }
+    }
+
+    private Dictionary<string, string> getAlphaDict(){
+        Dictionary<string, string> dict = new Dictionary<string, string>();
+        for (int i = 10; i < 100; i += alphaIncrement){
+            string key = $"<alpha=#{i}>";
+            string value = $"<alpha=#{i + 5}>";
+            dict[key] = value;
+        }
+        return dict;
     }
 
 // ============== INNER CLASSES =========================================
