@@ -47,7 +47,7 @@ public class DialogueSystem : MonoBehaviour
     private float displaySpeed = 0.02f; //adjust as needed
     private float fadeTimer = 0.0f;
     [SerializeField]
-    private float fadeSpeed = 0.04f; //adjust as needed
+    private float fadeSpeed = 0.015f; //adjust as needed
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -96,6 +96,14 @@ public class DialogueSystem : MonoBehaviour
             if (currentShownCharacters < textObj.textInfo.characterCount) {
                 currentShownCharacters = textObj.textInfo.characterCount;
                 textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+
+                //set all letters to alpha/opacity to 100% and clear alphaIndex
+                for (int toRemove = alphaIndex.Count-1; toRemove>=0; toRemove--){
+                    textObj.text = textObj.text.Remove(alphaIndex[toRemove], aTagLength);
+                    alphaIndex.RemoveAt(toRemove);
+                }
+                currentCharIndex = currentShownCharacters;
+
             } else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
                 string text = book.getCurrentEntryAndIncrement().dialogue;
@@ -142,8 +150,6 @@ public class DialogueSystem : MonoBehaviour
         if (fadeTimer == 0){
             bool toRemove = false;
             foreach (int index in alphaIndex){
-                if (index<0)
-                    print(index);
                 string oldTag = textObj.text.Substring(index, aTagLength);
                 string newTag = alphaDict[oldTag];
                 //replace the old tag with the new tag
@@ -156,15 +162,12 @@ public class DialogueSystem : MonoBehaviour
 
             //remove the 100% alpha tag (since it is useless), and adjust indexes 
             if (toRemove == true){
-                Debug.Log("toRemove: "+alphaIndex[0]);
                 textObj.text = textObj.text.Remove(alphaIndex[0], aTagLength);
                 currentCharIndex-=aTagLength;
                 alphaIndex.RemoveAt(0);
                 for (int i = 0; i<alphaIndex.Count; i++){
                     alphaIndex[i]-=aTagLength;
                 }
-                Debug.Log("removed");
-
             }
         }
 
