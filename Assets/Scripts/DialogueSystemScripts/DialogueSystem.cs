@@ -26,11 +26,11 @@ public class DialogueSystem : MonoBehaviour
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
     public int maxLines = 20;
-    private int currentShownCharacter=0;
+    private int currentShownCharacters=0;
     private int currentTotalCharacters=0;
     private int currentDeployedAlphas=0;
     private int maxDeployedAlphas=5;
-    private List<int> alphaIndex;
+    private ArrayList alphaIndex;
 
     //keeps track of time 
     private float currentTime = 0.0f;
@@ -53,10 +53,7 @@ public class DialogueSystem : MonoBehaviour
         //gets the text component from the DialogueObject
         textObj = DialogueObject.GetComponent<TMP_Text>();
 
-        alphaIndex = new List<int>();
-        for (int i =0; i<5; i++){
-            alphaIndex.Add(-1);
-        }
+        alphaIndex = new ArrayList();
     }
 
     void Start(){
@@ -80,8 +77,9 @@ public class DialogueSystem : MonoBehaviour
             //Debug.Log("continue to next entry");
 
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
-            if (currentShownCharacter < currentTotalCharacters) {
-                currentShownCharacter = currentTotalCharacters;
+            if (currentShownCharacters < currentTotalCharacters) {
+                currentShownCharacters = currentTotalCharacters;
+                textObj.maxVisibleCharacters = currentTotalCharacters;
             } else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
                 string text = book.getCurrentEntryAndIncrement().dialogue;
@@ -95,7 +93,7 @@ public class DialogueSystem : MonoBehaviour
 
                 //handle letters
                 currentTotalCharacters = textObj.text.Length;
-                textObj.maxVisibleCharacters=currentShownCharacter;
+                textObj.maxVisibleCharacters=currentShownCharacters;
 
                 // Debug.Log(currentTotalCharacters);
                 // Debug.Log(textObj.maxVisibleCharacters);
@@ -116,15 +114,25 @@ public class DialogueSystem : MonoBehaviour
 
     void addTextToScreen(){
         if (displayTimer==0){
-            if (currentShownCharacter<currentTotalCharacters){
-                currentShownCharacter+=1;
-                textObj.maxVisibleCharacters=currentShownCharacter;
+            if (currentShownCharacters<currentTotalCharacters){
+                currentShownCharacters+=1;
+                textObj.maxVisibleCharacters=currentShownCharacters;
+
+                //set its alpha to 0.2 (also shift all elements to the right 1)
+                alphaIndex.Add(currentShownCharacters);
+                textObj.text=textObj.text.Insert(currentShownCharacters-1, "|");
+                currentShownCharacters++;
+                currentTotalCharacters++;
+                textObj.maxVisibleCharacters++;
+
             }
         }
         // also lower opacity of previous entries
         // check if lines have exceeded maxLines
         //text.maxVisibleCharacters=9;
         //Debug.Log(text.textInfo.lineCount);
+
+        //0.2, .4, .6., .8, 1
 
         /*
         <color=#aaaaaa> 15
