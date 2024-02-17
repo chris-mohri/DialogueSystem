@@ -28,11 +28,14 @@ public class DialogueSystem : MonoBehaviour
     public int maxLines = 20;
     private int currentShownCharacter=0;
     private int currentTotalCharacters=0;
+    private int currentDeployedAlphas=0;
+    private int maxDeployedAlphas=5;
+    private List<int> alphaIndex;
 
     //keeps track of time 
     private float currentTime = 0.0f;
     private float displayTimer = 0.0f;
-    private float displaySpeed = 0.01f;
+    private float displaySpeed = 0.02f;
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -49,6 +52,11 @@ public class DialogueSystem : MonoBehaviour
         controls = new PlayerControls();
         //gets the text component from the DialogueObject
         textObj = DialogueObject.GetComponent<TMP_Text>();
+
+        alphaIndex = new List<int>();
+        for (int i =0; i<5; i++){
+            alphaIndex.Add(-1);
+        }
     }
 
     void Start(){
@@ -82,11 +90,21 @@ public class DialogueSystem : MonoBehaviour
                         text = " "+ text;
                     }
                 }
-
+                //add the text to the textObj
                 textObj.text += text;
+
+                //handle letters
+                currentTotalCharacters = textObj.text.Length;
+                textObj.maxVisibleCharacters=currentShownCharacter;
+
+                // Debug.Log(currentTotalCharacters);
+                // Debug.Log(textObj.maxVisibleCharacters);
+                // Debug.Log(textObj.text.Length);
+                // Debug.Log("====");
             }
 
         }
+        
 
         //display the letters
         addTextToScreen();
@@ -98,7 +116,10 @@ public class DialogueSystem : MonoBehaviour
 
     void addTextToScreen(){
         if (displayTimer==0){
-
+            if (currentShownCharacter<currentTotalCharacters){
+                currentShownCharacter+=1;
+                textObj.maxVisibleCharacters=currentShownCharacter;
+            }
         }
         // also lower opacity of previous entries
         // check if lines have exceeded maxLines
@@ -106,7 +127,8 @@ public class DialogueSystem : MonoBehaviour
         //Debug.Log(text.textInfo.lineCount);
 
         /*
-        <color=#aaaaaa><alpha=#b8>
+        <color=#aaaaaa> 15
+        <alpha=#b8> 11
         */
     }
 
