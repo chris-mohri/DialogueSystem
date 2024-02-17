@@ -33,7 +33,7 @@ public class DialogueSystem : MonoBehaviour
     private int currentTotalCharacters=0;
     private int currentDeployedAlphas=0;
     private int maxDeployedAlphas=5;
-    private ArrayList alphaIndex;
+    private List<int> alphaIndex;
     private Dictionary<string, string> alphaDict;
     [SerializeField]
     private int alphaIncrement = 5;
@@ -47,7 +47,7 @@ public class DialogueSystem : MonoBehaviour
     private float displaySpeed = 0.02f; //adjust as needed
     private float fadeTimer = 0.0f;
     [SerializeField]
-    private float fadeSpeed = 0.01f; //adjust as needed
+    private float fadeSpeed = 0.04f; //adjust as needed
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -65,7 +65,7 @@ public class DialogueSystem : MonoBehaviour
         //gets the text component from the DialogueObject
         textObj = DialogueObject.GetComponent<TMP_Text>();
 
-        alphaIndex = new ArrayList();
+        alphaIndex = new List<int>();
     }
 
     void Start(){
@@ -138,25 +138,47 @@ public class DialogueSystem : MonoBehaviour
 
     void addTextToScreen(){
         
-        //in a faster timer, update every alpha tag in the arraylist, removing tags that reach 100%
+        //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer == 0){
+            bool toRemove = false;
             foreach (int index in alphaIndex){
-                string newTag = alphaDict[textObj.text.Substring(index, 11)];
-                //if the new tag is 100% alpha (opacity), then just remove it
-                
+                if (index<0)
+                    print(index);
+                string oldTag = textObj.text.Substring(index, aTagLength);
+                string newTag = alphaDict[oldTag];
+                //replace the old tag with the new tag
+                if (newTag != "<alpha=#100>"){
+                    textObj.text = textObj.text.Replace(oldTag, newTag);
+                } else {
+                    toRemove = true; //remove this tag
+                }
+            }
+
+            //remove the 100% alpha tag (since it is useless), and adjust indexes 
+            if (toRemove == true){
+                Debug.Log("toRemove: "+alphaIndex[0]);
+                textObj.text = textObj.text.Remove(alphaIndex[0], aTagLength);
+                currentCharIndex-=aTagLength;
+                alphaIndex.RemoveAt(0);
+                for (int i = 0; i<alphaIndex.Count; i++){
+                    alphaIndex[i]-=aTagLength;
+                }
+                Debug.Log("removed");
+
             }
         }
 
         if (displayTimer==0){
             if (currentShownCharacters<textObj.textInfo.characterCount){
+                //add this index to the list
+                alphaIndex.Add(currentCharIndex);
+                //add the alpha tag
+                textObj.text=textObj.text.Insert(currentCharIndex, aTag1);
+                currentCharIndex+=aTagLength;
+
                 currentShownCharacters+=1;
                 currentCharIndex+=1;
                 textObj.maxVisibleCharacters=currentShownCharacters;
-
-                //add this index to the list
-                alphaIndex.Add(currentCharIndex);
-                textObj.text=textObj.text.Insert(currentCharIndex-1, aTag1);
-                currentCharIndex+=11;
             }
         }
 
@@ -192,6 +214,11 @@ public class DialogueSystem : MonoBehaviour
             string value = $"<alpha=#{i + 5}>";
             dict[key] = value;
         }
+        // foreach (string key in dict.Keys)
+        // {
+        //     Debug.Log(key);
+        // }
+        
         return dict;
     }
 
