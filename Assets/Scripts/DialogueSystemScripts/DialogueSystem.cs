@@ -100,6 +100,7 @@ public class DialogueSystem : MonoBehaviour
         handleTimer();
     }
 
+    private string newLineSpace = "  ";
     //gets called every frame
     void handleScreen(){
         //if the player presses continue
@@ -126,9 +127,9 @@ public class DialogueSystem : MonoBehaviour
                     }
                     //automatically adds white space when on a new line
                     else if (text.Substring(0,1)=="\n"){
-                        text = text.Insert(1, "  ");
+                        text = text.Replace("\n", $"\n{newLineSpace}");
                     } else if (textObj.textInfo.characterCount==0){
-                        text = "  "+text;
+                        text = newLineSpace+text;
                     }
                 }
     
