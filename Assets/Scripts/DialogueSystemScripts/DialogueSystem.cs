@@ -38,11 +38,8 @@ public class DialogueSystem : MonoBehaviour
     private int currentTotalCharacters=0; 
     //list of the indexes of the alpha tags
     private List<int> alphaIndex;
-    //assigns the next alpha tag based on the current alpha tag (e.g. alpha 15% will 
-    //  go to alpha 20% if increment is 5%)
-    private Dictionary<string, string> alphaDict;
     //the increment amount for the alpha (opacity) of letters
-    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")]
+    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")] [Range(0, 100)]
     private int alphaIncrement = 5;
     //starting alpha value of the newest letter that is displayed (keep at 10 since
     //  since the length must stay as 11)
@@ -83,9 +80,8 @@ public class DialogueSystem : MonoBehaviour
         book = new Book();
         book.LoadChapter(chapter1);
 
-        //gets the alpha dictionary (controls the opacity increments when fading in letters)
-        alphaDict = getAlphaDict();
         aTagLength = aTag1.Length;
+
 
     }
 
@@ -123,12 +119,19 @@ public class DialogueSystem : MonoBehaviour
             } else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
                 string text = book.getCurrentEntryAndIncrement().dialogue;
-                if (text.Length>=2){
+                if (text.Length>=1){
                     //automatically adds a space between sentences when not on a new line
-                    if (text.Substring(0,2)!="\n" && textObj.text.Length!=0){
+                    if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
                         text = " "+ text;
                     }
+                    //automatically adds white space when on a new line
+                    else if (text.Substring(0,1)=="\n"){
+                        text = text.Insert(1, "  ");
+                    } else if (textObj.textInfo.characterCount==0){
+                        text = "  "+text;
+                    }
                 }
+    
                 //add the text to the textObj
                 textObj.text += text;
                 // check if lines have exceeded maxLines
@@ -144,8 +147,6 @@ public class DialogueSystem : MonoBehaviour
         // Debug.Log(textObj.textInfo.characterCount);
         // Debug.Log(textObj.text.Length);
 
-        
-
         //display the letters
         addTextToScreen();
     }
@@ -157,7 +158,10 @@ public class DialogueSystem : MonoBehaviour
             bool toRemove = false;
             foreach (int index in alphaIndex){
                 string oldTag = textObj.text.Substring(index, aTagLength);
-                string newTag = alphaDict[oldTag];
+                //get the new tag <alpha=#99>
+                int num = int.Parse(oldTag.Substring(8, 2));
+                string newTag = $"<alpha=#{num+alphaIncrement}>";
+
                 //replace the old tag with the new tag
                 if (newTag.Length <= aTagLength){
                     textObj.text = textObj.text.Replace(oldTag, newTag);
@@ -168,8 +172,7 @@ public class DialogueSystem : MonoBehaviour
 
             //remove the 100% alpha tag (since it is useless), and adjust indexes 
             if (toRemove == true){
-                textObj.text = textObj.text.Remove(alphaIndex[0], aTagLength);
-                currentCharIndex-=aTagLength;
+                removeTag(alphaIndex[0], aTag1);
                 alphaIndex.RemoveAt(0);
                 for (int i = 0; i<alphaIndex.Count; i++){
                     alphaIndex[i]-=aTagLength;
@@ -180,17 +183,17 @@ public class DialogueSystem : MonoBehaviour
         }
 
         // Debug.Log("Checking current display time: "+displayTimer + " | " + displaySpeed);
+        //display the next letter at the routine time
         if (displayTimer >= displaySpeed){
             // Debug.Log("Entered");
             if (currentShownCharacters<textObj.textInfo.characterCount){
                 //add this index to the list
                 alphaIndex.Add(currentCharIndex);
                 //add the alpha tag
-                textObj.text=textObj.text.Insert(currentCharIndex, aTag1);
-                currentCharIndex+=aTagLength;
+                addTag(currentCharIndex, aTag1);
 
                 currentShownCharacters+=1;
-                currentCharIndex+=1;
+                currentCharIndex+=1; //move the pointer to the next letter so we can place a tag on it
                 textObj.maxVisibleCharacters=currentShownCharacters;
             }
             displayTimer = 0.0f;
@@ -198,15 +201,13 @@ public class DialogueSystem : MonoBehaviour
 
         // also lower opacity of previous entries
         // check if lines have exceeded maxLines
-        //text.maxVisibleCharacters=9;
-        //Debug.Log(text.textInfo.lineCount);
-
-        //0.2, .4, .6., .8, 1
 
         /*
         <color=#aaaaaa> 15
         <alpha=#b8> 11
         <alpha=20> 10
+
+        <alpha=#b8><color=#aaaaaa>...<alpha=#ff><color=#ffffff>26
         */
     }
 
@@ -216,24 +217,16 @@ public class DialogueSystem : MonoBehaviour
         fadeTimer += Time.deltaTime;
     }
 
-    private Dictionary<string, string> getAlphaDict(){
-        Dictionary<string, string> dict = new Dictionary<string, string>();
-        for (int i = 10; i < 1000; i += alphaIncrement){
-            string key = $"<alpha=#{i}>";
-            string value = $"<alpha=#{i + 5}>";
-            dict[key] = value;
+    //add the tag at the given index
+    void addTag(int rawIndex, string tag){
+        textObj.text = textObj.text.Insert(rawIndex, tag);
+        currentCharIndex+=tag.Length;
+    }
 
-            //break if the alpha value is above 100%
-            if (value.Length >=12){
-                break;
-            }
-        }
-        // foreach (string key in dict.Keys)
-        // {
-        //     Debug.Log(key);
-        // }
-        
-        return dict;
+    //removes the tag at the given index
+    void removeTag(int rawIndex, string tag){
+        textObj.text = textObj.text.Remove(rawIndex, tag.Length);
+        currentCharIndex-=tag.Length;
     }
 
 // ============== INNER CLASSES =========================================
