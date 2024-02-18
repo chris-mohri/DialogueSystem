@@ -24,16 +24,14 @@ public class DialogueSystem : MonoBehaviour
     //the text component to the DialogueObject
     private TMP_Text textObj;
 
+    // ------------------- text display/animation variables -------------------
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
-
-    // ------------------- text display/animation variables -------------------
     public int maxLines = 20;
     //tracks the index of the newest letter shown on screen from the raw text
     //  (raw text also counts any of TMPro's alpha or color tags that don't show up
     //  when using textObj.textInfo.characterCount)
     private int currentCharIndex=0;
-
     //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
     //tracks the numeber of characters in the text
@@ -110,8 +108,6 @@ public class DialogueSystem : MonoBehaviour
     void handleScreen(){
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
-            //Debug.Log("continue to next entry");
-
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
             if (currentShownCharacters < textObj.textInfo.characterCount) {
                 currentShownCharacters = textObj.textInfo.characterCount;
