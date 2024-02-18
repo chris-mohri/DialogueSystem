@@ -10,9 +10,10 @@ public class DialogueSystem : MonoBehaviour
     //controls for the dialogue system
     public PlayerControls controls;
 
-    //display variables
+    // ------------------- display variables -------------------
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
     private bool stillDisplaying=false;
+    //true if the end of the chapter has been reached 
     private bool chapterEnd=false;
     //blinks at the end of the current entry
     private string endCharacter = "[]";
@@ -26,27 +27,38 @@ public class DialogueSystem : MonoBehaviour
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
 
-    //text display/animation variables
+    // ------------------- text display/animation variables -------------------
     public int maxLines = 20;
+    //tracks the index of the newest letter shown on screen from the raw text
+    //  (raw text also counts any of TMPro's alpha or color tags that don't show up
+    //  when using textObj.textInfo.characterCount)
     private int currentCharIndex=0;
+
+    //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
-    private int currentTotalCharacters=0;
-    private int currentDeployedAlphas=0;
-    private int maxDeployedAlphas=5;
+    //tracks the numeber of characters in the text
+    private int currentTotalCharacters=0; 
+    //list of the indexes of the alpha tags
     private List<int> alphaIndex;
+    //assigns the next alpha tag based on the current alpha tag (e.g. alpha 15% will 
+    //  go to alpha 20% if increment is 5%)
     private Dictionary<string, string> alphaDict;
-    [SerializeField]
+    //the increment amount for the alpha (opacity) of letters
+    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")]
     private int alphaIncrement = 5;
+    //starting alpha value of the newest letter that is displayed (keep at 10 since
+    //  since the length must stay as 11)
     private string aTag1 = "<alpha=#10>"; //11 length
+    //set as 11
     private int aTagLength;
 
-    //keeps track of time 
+    // ------------------- keeps track of time -------------------
     private float currentTime = 0.0f;
     private float displayTimer = 0.0f;
-    [SerializeField]
+    [SerializeField] [Tooltip("Time (in seconds) to display the next letter")]
     private float displaySpeed = 0.02f; //adjust as needed 
     private float fadeTimer = 0.0f;
-    [SerializeField]
+    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters")]
     private float fadeSpeed = 0.004f; //adjust as needed
 
     //the main data object that holds the dialogue information
@@ -57,7 +69,7 @@ public class DialogueSystem : MonoBehaviour
     //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
     public TextAsset chapter1;
 
-    // =======================================================================================
+    //=======================================================================================
 
     void Awake(){
         //creates the player controls
@@ -151,7 +163,7 @@ public class DialogueSystem : MonoBehaviour
                 string oldTag = textObj.text.Substring(index, aTagLength);
                 string newTag = alphaDict[oldTag];
                 //replace the old tag with the new tag
-                if (newTag != "<alpha=#100>"){
+                if (newTag.Length <= aTagLength){
                     textObj.text = textObj.text.Replace(oldTag, newTag);
                 } else {
                     toRemove = true; //remove this tag
@@ -210,10 +222,15 @@ public class DialogueSystem : MonoBehaviour
 
     private Dictionary<string, string> getAlphaDict(){
         Dictionary<string, string> dict = new Dictionary<string, string>();
-        for (int i = 10; i < 100; i += alphaIncrement){
+        for (int i = 10; i < 1000; i += alphaIncrement){
             string key = $"<alpha=#{i}>";
             string value = $"<alpha=#{i + 5}>";
             dict[key] = value;
+
+            //break if the alpha value is above 100%
+            if (value.Length >=12){
+                break;
+            }
         }
         // foreach (string key in dict.Keys)
         // {
