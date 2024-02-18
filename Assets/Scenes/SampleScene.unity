@@ -804,4 +804,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DialogueObject: {fileID: 1041983444}
   maxLines: 20
+  alphaIncrement: 5
+  displaySpeed: 1
+  fadeSpeed: 1
   chapter1: {fileID: 4900000, guid: c92659bd5e6d47f4780d3c148a9a1f6b, type: 3}

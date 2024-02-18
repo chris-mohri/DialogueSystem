@@ -44,10 +44,10 @@ public class DialogueSystem : MonoBehaviour
     private float currentTime = 0.0f;
     private float displayTimer = 0.0f;
     [SerializeField]
-    private float displaySpeed = 0.02f; //adjust as needed
+    private float displaySpeed = 0.02f; //adjust as needed 
     private float fadeTimer = 0.0f;
     [SerializeField]
-    private float fadeSpeed = 0.015f; //adjust as needed
+    private float fadeSpeed = 0.004f; //adjust as needed
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -88,6 +88,14 @@ public class DialogueSystem : MonoBehaviour
 
     // Update is called once per frame
     void Update(){
+        handleScreen();
+
+        //update timer
+        handleTimer();
+    }
+
+    //gets called every frame
+    void handleScreen(){
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
             //Debug.Log("continue to next entry");
@@ -119,15 +127,7 @@ public class DialogueSystem : MonoBehaviour
                 // TODO
 
                 //handle letters
-                // currentTotalCharacters = textObj.textInfo.characterCount;
                 textObj.maxVisibleCharacters=currentShownCharacters;
-
-                // Debug.Log(textObj.textInfo.characterCount);
-                // Debug.Log(currentTotalCharacters);
-                // Debug.Log(textObj.maxVisibleCharacters);
-                // Debug.Log(currentShownCharacters);
-                // Debug.Log(textObj.text.Length);
-                // Debug.Log("====");
             }
 
         }
@@ -136,18 +136,16 @@ public class DialogueSystem : MonoBehaviour
         // Debug.Log(textObj.textInfo.characterCount);
         // Debug.Log(textObj.text.Length);
 
+        
+
         //display the letters
         addTextToScreen();
-
-        //update timer
-        handleTimer();
-
     }
 
     void addTextToScreen(){
         
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
-        if (fadeTimer == 0){
+        if (fadeTimer >= fadeSpeed){
             bool toRemove = false;
             foreach (int index in alphaIndex){
                 string oldTag = textObj.text.Substring(index, aTagLength);
@@ -169,9 +167,13 @@ public class DialogueSystem : MonoBehaviour
                     alphaIndex[i]-=aTagLength;
                 }
             }
+
+            fadeTimer = 0.0f;
         }
 
-        if (displayTimer==0){
+        // Debug.Log("Checking current display time: "+displayTimer + " | " + displaySpeed);
+        if (displayTimer >= displaySpeed){
+            // Debug.Log("Entered");
             if (currentShownCharacters<textObj.textInfo.characterCount){
                 //add this index to the list
                 alphaIndex.Add(currentCharIndex);
@@ -183,6 +185,7 @@ public class DialogueSystem : MonoBehaviour
                 currentCharIndex+=1;
                 textObj.maxVisibleCharacters=currentShownCharacters;
             }
+            displayTimer = 0.0f;
         }
 
         // also lower opacity of previous entries
@@ -200,14 +203,9 @@ public class DialogueSystem : MonoBehaviour
     }
 
     void handleTimer(){
+        currentTime += Time.deltaTime;
         displayTimer += Time.deltaTime;
         fadeTimer += Time.deltaTime;
-        if (displayTimer >= displaySpeed) {
-            displayTimer = 0;
-        }
-        if (fadeTimer >= fadeSpeed) {
-            fadeTimer = 0;
-        }
     }
 
     private Dictionary<string, string> getAlphaDict(){
