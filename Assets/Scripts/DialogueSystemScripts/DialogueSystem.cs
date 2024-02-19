@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using System.IO;
 using TMPro;
@@ -83,7 +84,6 @@ public class DialogueSystem : MonoBehaviour
         //creates the book
         book = new Book();
         book.LoadChapter(chapter1);
-
     }
 
     private void OnEnable(){
@@ -102,7 +102,7 @@ public class DialogueSystem : MonoBehaviour
     }
 
     //gets called every frame
-    void handleScreen(){
+    private void handleScreen(){
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
@@ -153,19 +153,9 @@ public class DialogueSystem : MonoBehaviour
                 if (textObj.text.Length>=26){
                     if (textObj.text.Substring(0, 26)!="<alpha=#b8><color=#aaaaaa>"){
                         addTag(0, "<alpha=#b8><color=#aaaaaa>");
-                        //adjust affected alpha indexes
-                        for (int i = 0; i<alphaIndex.Count; i++){
-                            if (alphaIndex[i]>=0)
-                                alphaIndex[i]+=26;
-                        }
                     }
                 } else {
                     addTag(0, "<alpha=#b8><color=#aaaaaa>");
-                    //adjust affected alpha indexes
-                    for (int i = 0; i<alphaIndex.Count; i++){
-                        if (alphaIndex[i]>=0)
-                            alphaIndex[i]+=26;
-                    }
                 }
 
                 //handle letters
@@ -182,7 +172,7 @@ public class DialogueSystem : MonoBehaviour
         addLettersToScreen();
     }
 
-    void addLettersToScreen(){
+    private void addLettersToScreen(){
         
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
@@ -190,11 +180,12 @@ public class DialogueSystem : MonoBehaviour
             foreach (int index in alphaIndex){
                 string oldTag = textObj.text.Substring(index, aTagLength);
                 //get the new tag e.g. <alpha=#99>
-                int num = int.Parse(oldTag.Substring(8, 2));
-                string newTag = $"<alpha=#{num+alphaIncrement}>";
+                string hex = oldTag.Substring(8, 2);
+                string newHex = addPercentToHex(hex, alphaIncrement);
+                string newTag = $"<alpha=#{newHex}>";
 
                 //replace the old tag with the new tag
-                if (newTag.Length <= aTagLength){
+                if (newHex != "FF"){
                     textObj.text = textObj.text.Replace(oldTag, newTag);
                 } else {
                     toRemove = true; //remove this tag
@@ -205,9 +196,7 @@ public class DialogueSystem : MonoBehaviour
             if (toRemove == true){
                 removeTag(alphaIndex[0], aTag1);
                 alphaIndex.RemoveAt(0);
-                for (int i = 0; i<alphaIndex.Count; i++){
-                    alphaIndex[i]-=aTagLength;
-                }
+                
             }
 
             fadeTimer = 0.0f;
@@ -242,24 +231,60 @@ public class DialogueSystem : MonoBehaviour
         */
     }
 
-    void handleTimer(){
+    private void handleTimer(){
         currentTime += Time.deltaTime;
         displayTimer += Time.deltaTime;
         fadeTimer += Time.deltaTime;
     }
 
+    private string addPercentToHex(string hexColor, int percentageToAdd)
+    {
+        //convert hex to percentage (00 to FF = 0% to 100%)
+        int intValue = int.Parse(hexColor, System.Globalization.NumberStyles.HexNumber);
+        double percentageValue = intValue / 255.0 * 100;
+
+        //add the percentage
+        percentageValue += percentageToAdd;
+
+        //clamp between 0 and 100
+        if (percentageValue<0){
+            percentageValue=0;
+        } else if (percentageValue>100){
+            percentageValue=100;
+        }
+
+        //convert percent back to hex
+        intValue = (int)Math.Round(percentageValue / 100 * 255);
+        string newHexColor = intValue.ToString("X2");
+
+        return newHexColor;
+    }
+
     //add the tag at the given index
-    void addTag(int rawIndex, string tag){
+    private void addTag(int rawIndex, string tag){
         textObj.text = textObj.text.Insert(rawIndex, tag);
         currentCharIndex+=tag.Length;
 
-        //adjust affected indexes?
+        //adjust affected alpha indexes
+        for (int i = 0; i<alphaIndex.Count; i++){
+            if (alphaIndex[i]>rawIndex){
+                alphaIndex[i]+=tag.Length;
+            }
+        }
     }
 
     //removes the tag at the given index
-    void removeTag(int rawIndex, string tag){
+    private void removeTag(int rawIndex, string tag){
         textObj.text = textObj.text.Remove(rawIndex, tag.Length);
         currentCharIndex-=tag.Length;
+
+        //adjust affected alpha indexes
+        for (int i = 0; i<alphaIndex.Count; i++){
+            if (alphaIndex[i]>rawIndex){
+                alphaIndex[i]-=aTagLength;
+            }
+        }
+        
     }
 
 
