@@ -5,7 +5,7 @@ using UnityEngine;
 using System.IO;
 using TMPro;
 
-public class DialogueSystem : MonoBehaviour
+public class dscopy : MonoBehaviour
 {
 
     //controls for the dialogue system
@@ -37,6 +37,8 @@ public class DialogueSystem : MonoBehaviour
     private int currentCharIndex=0;
     //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
+    //list of the indexes of the alpha tags
+    private List<int> alphaIndex;
     //the increment amount for the alpha (opacity) of letters
     [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")] [Range(0, 100)]
     private int alphaIncrement = 5;
@@ -74,6 +76,8 @@ public class DialogueSystem : MonoBehaviour
         controls = new PlayerControls();
         //gets the text component from the DialogueObject
         textObj = DialogueObject.GetComponent<TMP_Text>();
+
+        alphaIndex = new List<int>();
         textObj.maxVisibleCharacters=0;
         aTagLength = aTag1.Length;
     }
@@ -106,23 +110,14 @@ public class DialogueSystem : MonoBehaviour
 
     //gets called every frame
     private void handleScreen(){
-        //make sure max visible character is never over the total number of characters
-        if (textObj.maxVisibleCharacters > textObj.textInfo.characterCount){
-            textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
-        }
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
             if (currentShownCharacters < textObj.textInfo.characterCount) {
-                //set all letters to alpha/opacity to 100% (by removing the alpha tags)
-                for (int index = textObj.text.Length-1; index>=0; index--){
-                    //if there's enough room for an alpha tag
-                    if (index+aTagLength<=textObj.text.Length-1) {
-                        //if there is indeed an alpha tag here
-                        if (textObj.text.Substring(index, 6)=="<alpha"){
-                            textObj.text = textObj.text.Remove(index, aTagLength);
-                        }
-                    }
+                //set all letters to alpha/opacity to 100% (by removing the alpha tags) and clear alphaIndex
+                for (int toRemove = alphaIndex.Count-1; toRemove>=0; toRemove--){
+                    textObj.text = textObj.text.Remove(alphaIndex[toRemove], aTagLength);
+                    alphaIndex.RemoveAt(toRemove);
                 }
                 currentShownCharacters = textObj.textInfo.characterCount;
                 textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
@@ -156,23 +151,21 @@ public class DialogueSystem : MonoBehaviour
                 // check if lines have exceeded maxLines
                 // TODO
 
-                // ===================== DIM TAGS =============================
                 // if the text doesn't have the dim tags yet, add them 
-                // if (textObj.text.Length>=26){
-                //     if (textObj.text.Substring(0, 26)!=dimTag){
-                //         addTag(0, dimTag);
-                //     }
-                // } else {
-                //     addTag(0, dimTag);
-                // }
+                if (textObj.text.Length>=26){
+                    if (textObj.text.Substring(0, 26)!=dimTag){
+                        addTag(0, dimTag);
+                    }
+                } else {
+                    addTag(0, dimTag);
+                }
 
-                // // remove the old undim tag and place the new undim tag
-                // if (undimTagIndex!=-1){
-                //     removeTag(undimTagIndex, "<color=#ffffff><alpha=#ff>");
-                // }
-                // undimTagIndex=currentCharIndex;
-                // addTag(currentCharIndex, "<color=#ffffff><alpha=#ff>");
-                // ============================================================
+                // remove the old undim tag and place the new undim tag
+                if (undimTagIndex!=-1){
+                    removeTag(undimTagIndex, "<color=#ffffff><alpha=#ff>");
+                }
+                undimTagIndex=currentCharIndex;
+                addTag(currentCharIndex, "<color=#ffffff><alpha=#ff>");
 
 
                 //handle letters
@@ -190,34 +183,30 @@ public class DialogueSystem : MonoBehaviour
     }
 
     private void addLettersToScreen(){
+        
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
-            int toRemove = -1;
-            for (int index = 0; index <= textObj.text.Length-1; index++){
-                //if there's enough letters to possibly house another alpha tag, then continue
-                if (index+aTagLength<=textObj.text.Length-1) {
-                    //if there is an alpha tag here
-                    if (textObj.text.Substring(index, 6)=="<alpha"){
-                        string oldTag = textObj.text.Substring(index, aTagLength);
-                        //get the new tag e.g. <alpha=#99>
-                        string hex = oldTag.Substring(8, 2);
-                        string newHex = addPercentToHex(hex, alphaIncrement);
-                        string newTag = $"<alpha=#{newHex}>";
+            bool toRemove = false;
+            foreach (int index in alphaIndex){
+                string oldTag = textObj.text.Substring(index, aTagLength);
+                //get the new tag e.g. <alpha=#99>
+                string hex = oldTag.Substring(8, 2);
+                string newHex = addPercentToHex(hex, alphaIncrement);
+                string newTag = $"<alpha=#{newHex}>";
 
-                        //mark for removal
-                        if (newHex=="FF"){
-                            toRemove = index;
-                            newHex="00";
-                        }
-
-                        //replace the old tag with the new tag
-                        textObj.text = textObj.text.Replace(oldTag, newTag);
-                    }
+                //replace the old tag with the new tag
+                if (newHex != "FF"){
+                    textObj.text = textObj.text.Replace(oldTag, newTag);
+                } else {
+                    toRemove = true; //remove this tag
                 }
             }
-            //remove the 100% alpha tag (since it is useless)
-            if (toRemove != -1){
-                removeTag(toRemove, "<alpha=#00>");
+
+            //remove the 100% alpha tag (since it is useless), and adjust indexes 
+            if (toRemove == true){
+                removeTag(alphaIndex[0], aTag1);
+                alphaIndex.RemoveAt(0);
+                
             }
 
             fadeTimer = 0.0f;
@@ -228,6 +217,8 @@ public class DialogueSystem : MonoBehaviour
         if (displayTimer >= displaySpeed){
             // Debug.Log("Entered");
             if (currentShownCharacters<textObj.textInfo.characterCount){
+                //add this index to the list
+                alphaIndex.Add(currentCharIndex);
                 //add the alpha tag
                 addTag(currentCharIndex, aTag1);
 
@@ -283,12 +274,27 @@ public class DialogueSystem : MonoBehaviour
     private void addTag(int rawIndex, string tag){
         textObj.text = textObj.text.Insert(rawIndex, tag);
         currentCharIndex+=tag.Length;
+
+        //adjust affected alpha indexes
+        for (int i = 0; i<alphaIndex.Count; i++){
+            if (alphaIndex[i]>rawIndex){
+                alphaIndex[i]+=tag.Length;
+            }
+        }
     }
 
     //removes the tag at the given index
     private void removeTag(int rawIndex, string tag){
         textObj.text = textObj.text.Remove(rawIndex, tag.Length);
-        currentCharIndex-=tag.Length;        
+        currentCharIndex-=tag.Length;
+
+        //adjust affected alpha indexes
+        for (int i = 0; i<alphaIndex.Count; i++){
+            if (alphaIndex[i]>rawIndex){
+                alphaIndex[i]-=aTagLength;
+            }
+        }
+        
     }
 
 
