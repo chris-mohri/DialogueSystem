@@ -1,2 +1,7 @@
 1. to denote the end of a chapter, make another entry and set the name to ".END" (you can leave everything else empty)
-2. 
+2. .
+
+TODO
+1. make it so text continues via click only if the a certain region on the screen is clicked
+2. next page functionality
+3. add a blinking marker at the end of the current sentence. 

@@ -9,14 +9,14 @@
     },
     {
         "name": "",
-        "dialogue": "\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.",
+        "dialogue": "\n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.",
         "route": 1,
         "voiceFile": "",
         "commands": ""
     },
     {
         "name": "Aoko",
-        "dialogue": "\"To be honest, I didn't really want to leave it to Tobimaru like this.\"",
+        "dialogue": "\n\n\"To be honest, I didn't really want to leave it to Tobimaru like this.\"",
         "route": 1,
         "voiceFile": "",
         "commands": ""
@@ -30,7 +30,7 @@
     },
     {
         "name": "",
-        "dialogue": "Aoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.",
+        "dialogue": "\n\nAoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.",
         "route": 1,
         "voiceFile": "",
         "commands": ""

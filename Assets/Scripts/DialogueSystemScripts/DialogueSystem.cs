@@ -45,6 +45,8 @@ public class DialogueSystem : MonoBehaviour
     //starting alpha value of the newest letter that is displayed (keep at 10 since
     //  since the length must stay as 11)
     private string aTag1 = "<alpha=#10>"; //11 length
+    //dim tag (previously displayed sentences are dimmed)
+    private string dimTag = "<color=#aaaaaa><alpha=#b8>";
     //set as 11
     private int aTagLength;
     //keeps track of the un-dim tags. 
@@ -84,6 +86,11 @@ public class DialogueSystem : MonoBehaviour
         //creates the book
         book = new Book();
         book.LoadChapter(chapter1);
+
+        //make sure the counters are counted correctly at the start
+        // currentShownCharacters = textObj.textInfo.characterCount;
+        // textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+        // currentCharIndex = textObj.text.Length;
     }
 
     private void OnEnable(){
@@ -144,20 +151,20 @@ public class DialogueSystem : MonoBehaviour
 
                 // if the text doesn't have the dim tags yet, add them 
                 if (textObj.text.Length>=26){
-                    if (textObj.text.Substring(0, 26)!="<alpha=#b8><color=#aaaaaa>"){
-                        addTag(0, "<alpha=#b8><color=#aaaaaa>");
+                    if (textObj.text.Substring(0, 26)!=dimTag){
+                        addTag(0, dimTag);
                     }
                 } else {
-                    addTag(0, "<alpha=#b8><color=#aaaaaa>");
+                    addTag(0, dimTag);
                 }
 
                 // remove the old undim tag and place the new undim tag
                 if (undimTagIndex!=-1){
-                    removeTag(undimTagIndex, "<alpha=#ff><color=#ffffff>");
+                    removeTag(undimTagIndex, "<color=#ffffff><alpha=#ff>");
                 }
                 undimTagIndex=currentCharIndex;
-                addTag(currentCharIndex, "<alpha=#ff><color=#ffffff>");
-                
+                addTag(currentCharIndex, "<color=#ffffff><alpha=#ff>");
+
 
                 //handle letters
                 // textObj.maxVisibleCharacters=currentShownCharacters;
