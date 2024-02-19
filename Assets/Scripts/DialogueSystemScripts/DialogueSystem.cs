@@ -25,6 +25,8 @@ public class DialogueSystem : MonoBehaviour
     private TMP_Text textObj;
 
     // ------------------- text display/animation variables -------------------
+    //indentation spaces for new lines. adjust as needed
+    private string newLineSpace = "  ";
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
     public int maxLines = 20;
@@ -34,8 +36,6 @@ public class DialogueSystem : MonoBehaviour
     private int currentCharIndex=0;
     //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
-    //tracks the numeber of characters in the text
-    private int currentTotalCharacters=0; 
     //list of the indexes of the alpha tags
     private List<int> alphaIndex;
     //the increment amount for the alpha (opacity) of letters
@@ -46,6 +46,8 @@ public class DialogueSystem : MonoBehaviour
     private string aTag1 = "<alpha=#10>"; //11 length
     //set as 11
     private int aTagLength;
+    //keeps track of the un-dim tags. 
+    private int undimTagIndex=-1;
 
     // ------------------- keeps track of time -------------------
     private float currentTime = 0.0f;
@@ -73,15 +75,14 @@ public class DialogueSystem : MonoBehaviour
         textObj = DialogueObject.GetComponent<TMP_Text>();
 
         alphaIndex = new List<int>();
+        textObj.maxVisibleCharacters=0;
+        aTagLength = aTag1.Length;
     }
 
     void Start(){
         //creates the book
         book = new Book();
         book.LoadChapter(chapter1);
-
-        aTagLength = aTag1.Length;
-
 
     }
 
@@ -100,22 +101,20 @@ public class DialogueSystem : MonoBehaviour
         handleTimer();
     }
 
-    private string newLineSpace = "  ";
     //gets called every frame
     void handleScreen(){
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
             if (currentShownCharacters < textObj.textInfo.characterCount) {
-                currentShownCharacters = textObj.textInfo.characterCount;
-                textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
-
-                //set all letters to alpha/opacity to 100% and clear alphaIndex
+                //set all letters to alpha/opacity to 100% (by removing the alpha tags) and clear alphaIndex
                 for (int toRemove = alphaIndex.Count-1; toRemove>=0; toRemove--){
                     textObj.text = textObj.text.Remove(alphaIndex[toRemove], aTagLength);
                     alphaIndex.RemoveAt(toRemove);
                 }
-                currentCharIndex = currentShownCharacters;
+                currentShownCharacters = textObj.textInfo.characterCount;
+                textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+                currentCharIndex = textObj.text.Length;
 
             } else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
@@ -125,41 +124,72 @@ public class DialogueSystem : MonoBehaviour
                     if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
                         text = " "+ text;
                     }
-                    //automatically adds white space when on a new line
+                    //automatically adds white space when on a new line, or adds white space 
+                    //when on a new page
                     else if (text.Substring(0,1)=="\n"){
                         text = text.Replace("\n", $"\n{newLineSpace}");
-                    } else if (textObj.textInfo.characterCount==0){
+                    } 
+                    //when on a new page
+                    else if (textObj.textInfo.characterCount==0){
                         text = newLineSpace+text;
+                        // add this tag <alpha=#b8><color=#aaaaaa>
                     }
                 }
+
+                //remove the old undim tag and place the new undim tag
+                // if (undimTagIndex!=-1){
+                //     // removeTag(undimTagIndex, "<alpha=#ff><color=#ffffff>");
+                // }
+                // undimTagIndex=currentCharIndex;
+                // addTag(currentCharIndex, "<alpha=#ff><color=#ffffff>");
     
                 //add the text to the textObj
                 textObj.text += text;
+
                 // check if lines have exceeded maxLines
                 // TODO
 
+                // if the text doesn't have the dim tags yet, add them 
+                if (textObj.text.Length>=26){
+                    if (textObj.text.Substring(0, 26)!="<alpha=#b8><color=#aaaaaa>"){
+                        addTag(0, "<alpha=#b8><color=#aaaaaa>");
+                        //adjust affected alpha indexes
+                        for (int i = 0; i<alphaIndex.Count; i++){
+                            if (alphaIndex[i]>=0)
+                                alphaIndex[i]+=26;
+                        }
+                    }
+                } else {
+                    addTag(0, "<alpha=#b8><color=#aaaaaa>");
+                    //adjust affected alpha indexes
+                    for (int i = 0; i<alphaIndex.Count; i++){
+                        if (alphaIndex[i]>=0)
+                            alphaIndex[i]+=26;
+                    }
+                }
+
                 //handle letters
-                textObj.maxVisibleCharacters=currentShownCharacters;
+                // textObj.maxVisibleCharacters=currentShownCharacters;
             }
 
         }
+        // Debug.Log(textObj.text);
         // Debug.Log(textObj.textInfo.characterCount);
-        // textObj.maxVisibleCharacters=4;
-        // Debug.Log(textObj.textInfo.characterCount);
-        // Debug.Log(textObj.text.Length);
+        // Debug.Log(textObj.maxVisibleCharacters);
+        // Debug.Log(currentCharIndex);
 
         //display the letters
-        addTextToScreen();
+        addLettersToScreen();
     }
 
-    void addTextToScreen(){
+    void addLettersToScreen(){
         
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
             bool toRemove = false;
             foreach (int index in alphaIndex){
                 string oldTag = textObj.text.Substring(index, aTagLength);
-                //get the new tag <alpha=#99>
+                //get the new tag e.g. <alpha=#99>
                 int num = int.Parse(oldTag.Substring(8, 2));
                 string newTag = $"<alpha=#{num+alphaIncrement}>";
 
@@ -208,7 +238,7 @@ public class DialogueSystem : MonoBehaviour
         <alpha=#b8> 11
         <alpha=20> 10
 
-        <alpha=#b8><color=#aaaaaa>...<alpha=#ff><color=#ffffff>26
+        <alpha=#b8><color=#aaaaaa>...<alpha=#ff><color=#ffffff> 26
         */
     }
 
@@ -222,6 +252,8 @@ public class DialogueSystem : MonoBehaviour
     void addTag(int rawIndex, string tag){
         textObj.text = textObj.text.Insert(rawIndex, tag);
         currentCharIndex+=tag.Length;
+
+        //adjust affected indexes?
     }
 
     //removes the tag at the given index
@@ -229,6 +261,8 @@ public class DialogueSystem : MonoBehaviour
         textObj.text = textObj.text.Remove(rawIndex, tag.Length);
         currentCharIndex-=tag.Length;
     }
+
+
 
 // ============== INNER CLASSES =========================================
 
