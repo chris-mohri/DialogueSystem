@@ -135,13 +135,6 @@ public class DialogueSystem : MonoBehaviour
                         // add this tag <alpha=#b8><color=#aaaaaa>
                     }
                 }
-
-                //remove the old undim tag and place the new undim tag
-                // if (undimTagIndex!=-1){
-                //     // removeTag(undimTagIndex, "<alpha=#ff><color=#ffffff>");
-                // }
-                // undimTagIndex=currentCharIndex;
-                // addTag(currentCharIndex, "<alpha=#ff><color=#ffffff>");
     
                 //add the text to the textObj
                 textObj.text += text;
@@ -157,6 +150,14 @@ public class DialogueSystem : MonoBehaviour
                 } else {
                     addTag(0, "<alpha=#b8><color=#aaaaaa>");
                 }
+
+                // remove the old undim tag and place the new undim tag
+                if (undimTagIndex!=-1){
+                    removeTag(undimTagIndex, "<alpha=#ff><color=#ffffff>");
+                }
+                undimTagIndex=currentCharIndex;
+                addTag(currentCharIndex, "<alpha=#ff><color=#ffffff>");
+                
 
                 //handle letters
                 // textObj.maxVisibleCharacters=currentShownCharacters;
