@@ -8,4 +8,4 @@
 .route 1
     Aoko .say "Two hours had passed and the clock struck nine."
     .voice /voice_files/aoko_route1_1
-    .commands  
+    .commands move()
