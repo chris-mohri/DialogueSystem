@@ -45,8 +45,8 @@ public class DialogueSystem : MonoBehaviour
     //  since the length must stay as 11)
     private string aTag1 = "<alpha=#10><link=fade></link>"; //11 length
     //dim tag (previously displayed sentences are dimmed)
-    private string dimTag = "<color=#aaaaaa><alpha=#b8><link=dim></link>";
-    private string undimTag = "<color=#ffffff><alpha=#ff><link=undim></link>";
+    private string dimTag = "<color=#aaaaaa><link=dim></link><alpha=#b8><link=dim></link>";
+    private string undimTag = "<color=#ffffff><link=undim></link><alpha=#ff><link=undim></link>";
     private int dimTagLength;
     //set as 11
     private int aTagLength;
@@ -123,7 +123,7 @@ public class DialogueSystem : MonoBehaviour
                     //if there's enough room for an alpha tag
                     if (index+aTagLength<=textObj.text.Length-1) {
                         //if there is indeed an alpha tag here and it is a fade tag
-                        if (textObj.text.Substring(index, 6)=="<alpha"  && GetTagId(index)=="fade"){
+                        if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                             textObj.text = textObj.text.Remove(index, aTagLength);
                         }
                     }
@@ -194,14 +194,16 @@ public class DialogueSystem : MonoBehaviour
     }
 
     private void AddLettersToScreen(){
+        int currentTextLength = textObj.text.Length;
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
             int toRemove = -1;
-            for (int index = 0; index <= textObj.text.Length-1; index++){
+            //loop through the text to find all the alpha tags
+            for (int index = 0; index <= currentTextLength-1; index++){
                 //if there's enough letters to possibly house another alpha tag, then continue
-                if (index+aTagLength<=textObj.text.Length-1) {
+                if (index+aTagLength<=currentTextLength-1) {
                     //if there is an alpha tag here and it is a fade tag
-                    if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
+                    if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
                         string hex = oldTag.Substring(8, 2);
@@ -226,7 +228,6 @@ public class DialogueSystem : MonoBehaviour
             fadeTimer = 0.0f;
         }
 
-        // Debug.Log("Checking current display time: "+displayTimer + " | " + displaySpeed);
         //display the next letter at the routine time
         if (displayTimer >= displaySpeed){
             // Debug.Log("Entered");
@@ -259,17 +260,57 @@ public class DialogueSystem : MonoBehaviour
         fadeTimer += Time.deltaTime;
     }
 
+    private string GetTag(int index){
+        //continue only if this is a tag
+        if (textObj.text[index]=='<'){
+            //finds the index of the first '=' after the '<'
+            int equalsIndex = textObj.text.IndexOf('=', index);
+            int closeIndex = textObj.text.IndexOf('>', index);
+            if (equalsIndex != -1 && closeIndex !=-1 && equalsIndex < closeIndex){
+                //find the type of tag
+                string tagType = textObj.text.Substring(index + 1, equalsIndex - index - 1);
+                return tagType.Trim(); // Trim any leading or trailing spaces
+            }
+            return "malformed-tag";
+
+        } else {
+            return "not-a-tag";
+        }
+    }
+
     //gets the id for the tag at the index
     private string GetTagId(int index){
-        string subString = textObj.text.Substring(index);
+        //continue only if this is a tag
+        if (textObj.text[index]=='<'){
+            //continue only if the tag immediately following is a link tag
+            for (int i = index; i<textObj.text.Length; i++){
+                //if current char is the closing tag
+                if (textObj.text[i]=='>'){
+                    //continue only if the the next character is a starting tag '<'
+                    if (i+1<textObj.text.Length && textObj.text[i+1]=='<'){
+                        int r = i+1;
+                        //continue only if the next tag is an id (link) tag
+                        if (r+6 <= textObj.text.Length && textObj.text.Substring(r, 6)=="<link="){
+                            string subString = textObj.text.Substring(r);
+                            //regex to find the link id
+                            Match match = Regex.Match(subString, @"<link=(.*?)>");
+                            if (match.Success && match.Groups.Count > 1){
+                                return match.Groups[1].Value;
+                            }
+                            return "malformed-link-tag";
 
-        //regex to find the link id
-        Match match = Regex.Match(subString, @"<link=(.*?)>");
-
-        if (match.Success && match.Groups.Count > 1){
-            return match.Groups[1].Value;
+                        } else {
+                            return "no-id-tag";
+                        }
+                    }
+                    //return if there is not an id tag associated with this tag 
+                    return "tag-not-followed-by-a-tag";
+                } 
+            }
+            //no closing tag '>'
+            return "no-closing-tag";
         }
-        return null;
+        return "not-a-tag";
     
     }
 
