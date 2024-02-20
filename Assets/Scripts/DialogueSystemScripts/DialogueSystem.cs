@@ -15,10 +15,6 @@ public class DialogueSystem : MonoBehaviour
     // ------------------- display variables -------------------
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
     private bool stillDisplaying=false;
-    //true if the end of the chapter has been reached 
-    private bool chapterEnd=false;
-    //blinks at the end of the current entry
-    private string endCharacter = "[]";
 
     //the dialogue object that has the text component
     [SerializeField]
@@ -31,7 +27,8 @@ public class DialogueSystem : MonoBehaviour
     private string newLineSpace = "  ";
     //max number of lines that the text can occupy on screen
     //search by text.textInfo.lineCount
-    public int maxLines = 20;
+    [SerializeField] [Tooltip("Maximum number of lines the text can occupy before moving to next page")] [Range(1, 1000)]
+    private int maxLines = 13;
     //tracks the index of the newest letter shown on screen from the raw text
     //  (raw text also counts any of TMPro's alpha or color tags that don't show up
     //  when using textObj.textInfo.characterCount)
@@ -39,7 +36,7 @@ public class DialogueSystem : MonoBehaviour
     //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
     //the increment amount for the alpha (opacity) of letters
-    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")] [Range(1, 100)]
+    [SerializeField] [Tooltip("Increment amount (percent) for the fade-in effect of letters (default: 5)")] [Range(1, 100)]
     private int alphaIncrement = 5;
     //starting alpha value of the newest letter that is displayed (keep at 10 since
     //  since the length must stay as 11)
@@ -54,17 +51,17 @@ public class DialogueSystem : MonoBehaviour
     private int undimTagIndex=-1;
 
     // ------------------- keeps track of time -------------------
-    private float currentTime = 0.0f;
-    private float displayTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to display the next letter")]
-    private float displaySpeed = 0.02f; //adjust as needed 
-    private float fadeTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters")]
-    private float fadeSpeed = 0.004f; //adjust as needed
+    private double currentTime = 0.0f;
+    private double displayTimer = 0.0f;
+    [SerializeField] [Tooltip("Time (in seconds) to display the next letter (default: 0.03)")] [Range(0.001f, 10f)]
+    private double displaySpeed = 0.03f; //adjust as needed 
+    private double fadeTimer = 0.0f;
+    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.001f, 10f)]
+    private double fadeSpeed = 0.004f; //adjust as needed
 
     //the main data object that holds the dialogue information
     private Book book;
-    private string endName = ".END";
+    // private string endName = ".END";
 
     //================== CHAPTERS ===========================================================
     //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
@@ -167,6 +164,7 @@ public class DialogueSystem : MonoBehaviour
                     }
                     undimTagIndex=currentCharIndex;
                     AddTag(currentCharIndex, undimTag);
+                    stillDisplaying=true;
                 } else {
                     Debug.Log("Chapter Ended");
                 }
@@ -208,6 +206,7 @@ public class DialogueSystem : MonoBehaviour
     }
 
     private void AddLettersToScreen(){
+        stillDisplaying=false;
         int currentTextLength = textObj.text.Length;
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
@@ -246,7 +245,9 @@ public class DialogueSystem : MonoBehaviour
         //display the next letter at the routine time
         if (displayTimer >= displaySpeed){
             //if there are more letters to fade in
-            if (currentShownCharacters<textObj.textInfo.characterCount){                
+            if (currentShownCharacters<textObj.textInfo.characterCount){     
+                stillDisplaying=true;
+
                 //add the alpha tag
                 AddTag(currentCharIndex, aTag1);
 
@@ -356,7 +357,7 @@ public class DialogueSystem : MonoBehaviour
     private void AddTag(int index, string tag){
         //happens if user puts into edits text in editor
         if (index>=textObj.text.Length){
-            Debug.Log("Invalid Index");
+            Debug.Log("Invalid Index When Adding Tag");
             currentShownCharacters = textObj.textInfo.characterCount;
             textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
             currentCharIndex = textObj.text.Length;
@@ -369,7 +370,7 @@ public class DialogueSystem : MonoBehaviour
     //removes the tag at the given index
     private void RemoveTag(int index, string tag){
         if (index>=textObj.text.Length){
-            Debug.Log("Invalid Index");
+            Debug.Log("Invalid Index When Removing Tag");
             return;
         }
         textObj.text = textObj.text.Remove(index, tag.Length);

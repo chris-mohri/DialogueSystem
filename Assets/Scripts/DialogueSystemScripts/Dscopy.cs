@@ -13,11 +13,11 @@ public class dscopy : MonoBehaviour
 
     // ------------------- display variables -------------------
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
-    private bool stillDisplaying=false;
+    // private bool stillDisplaying=false;
     //true if the end of the chapter has been reached 
-    private bool chapterEnd=false;
+    // private bool chapterEnd=false;
     //blinks at the end of the current entry
-    private string endCharacter = "[]";
+    // private string endCharacter = "[]";
 
     //the dialogue object that has the text component
     [SerializeField]
@@ -63,7 +63,7 @@ public class dscopy : MonoBehaviour
 
     //the main data object that holds the dialogue information
     private Book book;
-    private string endName = ".END";
+    // private string endName = ".END";
 
     //================== CHAPTERS ===========================================================
     //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
