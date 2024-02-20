@@ -33,8 +33,6 @@ public class DialogueSystem : MonoBehaviour
     //  (raw text also counts any of TMPro's alpha or color tags that don't show up
     //  when using textObj.textInfo.characterCount)
     private int currentCharIndex=0;
-    //tracks the number of characters that are set as visible in the text
-    private int currentShownCharacters=0;
     //the increment amount for the alpha (opacity) of letters
     [SerializeField] [Tooltip("Increment amount (percent) for the fade-in effect of letters (default: 5)")] [Range(1, 100)]
     private int alphaIncrement = 5;
@@ -85,7 +83,6 @@ public class DialogueSystem : MonoBehaviour
         book.LoadChapter(chapter1);
 
         //make sure the counters are counted correctly at the start
-        currentShownCharacters = textObj.textInfo.characterCount;
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
     }
@@ -114,7 +111,7 @@ public class DialogueSystem : MonoBehaviour
         //if the player presses continue
         if (controls.Keyboard.Continue.triggered){
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
-            if (currentShownCharacters < textObj.textInfo.characterCount) {
+            if (textObj.maxVisibleCharacters < textObj.textInfo.characterCount) {
                 //set all letters to alpha/opacity to 100% (by removing the alpha tags)
                 for (int index = textObj.text.Length-1; index>=0; index--){
                     //if there's enough room for an alpha tag
@@ -126,7 +123,6 @@ public class DialogueSystem : MonoBehaviour
                         }
                     }
                 }
-                currentShownCharacters = textObj.textInfo.characterCount;
                 textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
                 currentCharIndex = textObj.text.Length;
 
@@ -144,9 +140,8 @@ public class DialogueSystem : MonoBehaviour
 
                     //add the text to the textObj 
                     textObj.text += text;
-
-                    // check if lines have exceeded maxLines
-                    // TODO
+                    textObj.ForceMeshUpdate();
+                    // Debug.Log(textObj.textInfo.lineCount);
 
                     // ===================== DIM TAGS =============================
                     // if the text doesn't have the dim tags yet, add them 
@@ -158,20 +153,33 @@ public class DialogueSystem : MonoBehaviour
                         AddTag(0, dimTag);
                     }
 
-                    // remove the old undim tag and place the new undim tag
+                    // remove the old undim tag and place the new undim tag =====
                     if (undimTagIndex!=-1){
                         RemoveTag(undimTagIndex, undimTag);
                     }
                     undimTagIndex=currentCharIndex;
                     AddTag(currentCharIndex, undimTag);
+                    // ===========================================================
+
+                    // check if lines have exceeded maxLines TODO=================
+                    if (textObj.textInfo.lineCount>=maxLines){
+                        textObj.text = text;
+                        textObj.ForceMeshUpdate();
+                        if (textObj.textInfo.lineCount>=maxLines){
+                            textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
+                            textObj.ForceMeshUpdate();
+                        }
+                        textObj.maxVisibleCharacters = 0;
+                        currentCharIndex = 0;
+                        undimTagIndex=-1;
+                    }
+
+                    // ===========================================================
                     stillDisplaying=true;
+
                 } else {
                     Debug.Log("Chapter Ended");
                 }
-
-                // ============================================================
-                //handle letters
-                // textObj.maxVisibleCharacters=currentShownCharacters;
 
             }
 
@@ -208,6 +216,7 @@ public class DialogueSystem : MonoBehaviour
     private void AddLettersToScreen(){
         stillDisplaying=false;
         int currentTextLength = textObj.text.Length;
+
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
             int toRemove = -1;
@@ -245,15 +254,14 @@ public class DialogueSystem : MonoBehaviour
         //display the next letter at the routine time
         if (displayTimer >= displaySpeed){
             //if there are more letters to fade in
-            if (currentShownCharacters<textObj.textInfo.characterCount){     
+            if (textObj.maxVisibleCharacters<textObj.textInfo.characterCount){     
                 stillDisplaying=true;
 
                 //add the alpha tag
                 AddTag(currentCharIndex, aTag1);
 
-                currentShownCharacters+=1;
                 currentCharIndex+=1; //move the pointer to the next letter so we can place a tag on it
-                textObj.maxVisibleCharacters=currentShownCharacters;
+                textObj.maxVisibleCharacters+=1;
             }
             displayTimer = 0.0f;
         }
@@ -355,10 +363,20 @@ public class DialogueSystem : MonoBehaviour
 
     //add the tag at the given index
     private void AddTag(int index, string tag){
+        textObj.ForceMeshUpdate();
         //happens if user puts into edits text in editor
         if (index>=textObj.text.Length){
-            Debug.Log("Invalid Index When Adding Tag");
-            currentShownCharacters = textObj.textInfo.characterCount;
+            Debug.Log("Invalid Index When Adding Tag.");
+            // for (int i = textObj.text.Length-1; i>=0; i--){
+            //     if (c==0) return;
+            //         //if there's enough room for an alpha tag
+            //         if (i+aTagLength<=textObj.text.Length-1) {
+            //             //if there is indeed an alpha tag here and it is a fade tag
+            //             if (textObj.text.Substring(i, 6)=="<alpha" && GetTagId(i)=="fade"){
+            //                 textObj.text = textObj.text.Remove(i, aTagLength);
+            //             }
+            //         }
+            //     }
             textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
             currentCharIndex = textObj.text.Length;
             return;
@@ -369,6 +387,7 @@ public class DialogueSystem : MonoBehaviour
 
     //removes the tag at the given index
     private void RemoveTag(int index, string tag){
+        textObj.ForceMeshUpdate();
         if (index>=textObj.text.Length){
             Debug.Log("Invalid Index When Removing Tag");
             return;

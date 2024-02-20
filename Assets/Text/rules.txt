@@ -3,6 +3,7 @@
 
 TODO
 1. make it so text continues via click only if the a certain region on the screen is clicked
-2. next page functionality
+2. DONE next page functionality
 3. add a blinking marker at the end of the current sentence. 
-4. change .json logic so it automatically adds the dialogueEntries: { }
+4. DONE change .json logic so it automatically adds the dialogueEntries: { }
+5. buggy when adding text (spam multiple letters at same time) ingame through the editor 
