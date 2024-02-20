@@ -161,8 +161,9 @@ public class DialogueSystem : MonoBehaviour
                     AddTag(currentCharIndex, undimTag);
                     // ===========================================================
 
-                    // check if lines have exceeded maxLines TODO=================
+                    // check if lines have exceeded maxLines     =================
                     if (textObj.textInfo.lineCount>=maxLines){
+                        //clear current text and set as new text
                         textObj.text = text;
                         textObj.ForceMeshUpdate();
                         if (textObj.textInfo.lineCount>=maxLines){
