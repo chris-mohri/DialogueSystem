@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EffectController : MonoBehaviour
 {
+
+    string baseImgDirectory = "Assets/Images/";
     // Start is called before the first frame update
     void Start()
     {
