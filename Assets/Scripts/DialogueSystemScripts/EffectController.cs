@@ -18,5 +18,5 @@ public class EffectController : MonoBehaviour
 
     // INSERT CUSTOM SCRIPTS HERE 
     // MAKE THEM PUBLIC!!
-    // e.g. public void customScriptName(input){ ... }
+    // e.g. public void customScriptName(input){ ... } 
 }

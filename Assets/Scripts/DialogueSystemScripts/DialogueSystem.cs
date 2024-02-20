@@ -175,11 +175,12 @@ public class DialogueSystem : MonoBehaviour
                         undimTagIndex=-1;
                     }
 
-                    // ===========================================================
+                    // =========================================================== 
                     stillDisplaying=true;
 
                 } else {
                     Debug.Log("Chapter Ended");
+                    Debug.Log("Is still displaying? "+stillDisplaying);
                 }
 
             }
