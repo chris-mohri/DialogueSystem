@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using System.IO;
 using TMPro;
+using System.Text.RegularExpressions;
 
 public class DialogueSystem : MonoBehaviour
 {
@@ -38,13 +39,15 @@ public class DialogueSystem : MonoBehaviour
     //tracks the number of characters that are set as visible in the text
     private int currentShownCharacters=0;
     //the increment amount for the alpha (opacity) of letters
-    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")] [Range(0, 100)]
+    [SerializeField] [Tooltip("Increment amount for the fade-in effect of letters")] [Range(1, 100)]
     private int alphaIncrement = 5;
     //starting alpha value of the newest letter that is displayed (keep at 10 since
     //  since the length must stay as 11)
-    private string aTag1 = "<alpha=#10>"; //11 length
+    private string aTag1 = "<alpha=#10><link=fade></link>"; //11 length
     //dim tag (previously displayed sentences are dimmed)
-    private string dimTag = "<color=#aaaaaa><alpha=#b8>";
+    private string dimTag = "<color=#aaaaaa><alpha=#b8><link=dim></link>";
+    private string undimTag = "<color=#ffffff><alpha=#ff><link=undim></link>";
+    private int dimTagLength;
     //set as 11
     private int aTagLength;
     //keeps track of the un-dim tags. 
@@ -76,6 +79,7 @@ public class DialogueSystem : MonoBehaviour
         textObj = DialogueObject.GetComponent<TMP_Text>();
         textObj.maxVisibleCharacters=0;
         aTagLength = aTag1.Length;
+        dimTagLength = dimTag.Length;
     }
 
     void Start(){
@@ -98,14 +102,14 @@ public class DialogueSystem : MonoBehaviour
 
     // Update is called once per frame
     void Update(){
-        handleScreen();
+        HandleScreen();
 
         //update timer
-        handleTimer();
+        HandleTimer();
     }
 
     //gets called every frame
-    private void handleScreen(){
+    private void HandleScreen(){
         //make sure max visible character is never over the total number of characters
         if (textObj.maxVisibleCharacters > textObj.textInfo.characterCount){
             textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
@@ -118,8 +122,8 @@ public class DialogueSystem : MonoBehaviour
                 for (int index = textObj.text.Length-1; index>=0; index--){
                     //if there's enough room for an alpha tag
                     if (index+aTagLength<=textObj.text.Length-1) {
-                        //if there is indeed an alpha tag here
-                        if (textObj.text.Substring(index, 6)=="<alpha"){
+                        //if there is indeed an alpha tag here and it is a fade tag
+                        if (textObj.text.Substring(index, 6)=="<alpha"  && GetTagId(index)=="fade"){
                             textObj.text = textObj.text.Remove(index, aTagLength);
                         }
                     }
@@ -133,7 +137,7 @@ public class DialogueSystem : MonoBehaviour
             } 
             else { //otherwise start displaying the next entry
                 //adds words to the dialogue box (they start as invisible)
-                string text = book.getCurrentEntryAndIncrement().dialogue;
+                string text = book.GetCurrentEntryAndIncrement().dialogue;
                 if (text.Length>=1){
                     //automatically adds a space between sentences when not on a new line
                     if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
@@ -158,20 +162,20 @@ public class DialogueSystem : MonoBehaviour
 
                 // ===================== DIM TAGS =============================
                 // if the text doesn't have the dim tags yet, add them 
-                // if (textObj.text.Length>=26){
-                //     if (textObj.text.Substring(0, 26)!=dimTag){
-                //         addTag(0, dimTag);
-                //     }
-                // } else {
-                //     addTag(0, dimTag);
-                // }
+                if (textObj.text.Length>=dimTagLength){
+                    if (textObj.text.Substring(0, dimTagLength)!=dimTag){
+                        AddTag(0, dimTag);
+                    }
+                } else {
+                    AddTag(0, dimTag);
+                }
 
-                // // remove the old undim tag and place the new undim tag
-                // if (undimTagIndex!=-1){
-                //     removeTag(undimTagIndex, "<color=#ffffff><alpha=#ff>");
-                // }
-                // undimTagIndex=currentCharIndex;
-                // addTag(currentCharIndex, "<color=#ffffff><alpha=#ff>");
+                // remove the old undim tag and place the new undim tag
+                if (undimTagIndex!=-1){
+                    RemoveTag(undimTagIndex, undimTag);
+                }
+                undimTagIndex=currentCharIndex;
+                AddTag(currentCharIndex, undimTag);
                 // ============================================================
 
 
@@ -186,38 +190,37 @@ public class DialogueSystem : MonoBehaviour
         // Debug.Log(currentCharIndex);
 
         //display the letters
-        addLettersToScreen();
+        AddLettersToScreen();
     }
 
-    private void addLettersToScreen(){
+    private void AddLettersToScreen(){
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
         if (fadeTimer >= fadeSpeed){
             int toRemove = -1;
             for (int index = 0; index <= textObj.text.Length-1; index++){
                 //if there's enough letters to possibly house another alpha tag, then continue
                 if (index+aTagLength<=textObj.text.Length-1) {
-                    //if there is an alpha tag here
-                    if (textObj.text.Substring(index, 6)=="<alpha"){
+                    //if there is an alpha tag here and it is a fade tag
+                    if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
                         string hex = oldTag.Substring(8, 2);
-                        string newHex = addPercentToHex(hex, alphaIncrement);
-                        string newTag = $"<alpha=#{newHex}>";
-
+                        string newHex = AddPercentToHex(hex, alphaIncrement);
+                        string newTag = $"<alpha=#{newHex}><link=fade></link>";
                         //mark for removal
                         if (newHex=="FF"){
                             toRemove = index;
                             newHex="00";
                         }
-
                         //replace the old tag with the new tag
                         textObj.text = textObj.text.Replace(oldTag, newTag);
                     }
+                    
                 }
             }
             //remove the 100% alpha tag (since it is useless)
             if (toRemove != -1){
-                removeTag(toRemove, "<alpha=#00>");
+                RemoveTag(toRemove, "<alpha=#00><link=fade></link>");
             }
 
             fadeTimer = 0.0f;
@@ -229,7 +232,7 @@ public class DialogueSystem : MonoBehaviour
             // Debug.Log("Entered");
             if (currentShownCharacters<textObj.textInfo.characterCount){
                 //add the alpha tag
-                addTag(currentCharIndex, aTag1);
+                AddTag(currentCharIndex, aTag1);
 
                 currentShownCharacters+=1;
                 currentCharIndex+=1; //move the pointer to the next letter so we can place a tag on it
@@ -250,13 +253,27 @@ public class DialogueSystem : MonoBehaviour
         */
     }
 
-    private void handleTimer(){
+    private void HandleTimer(){
         currentTime += Time.deltaTime;
         displayTimer += Time.deltaTime;
         fadeTimer += Time.deltaTime;
     }
 
-    private string addPercentToHex(string hexColor, int percentageToAdd)
+    //gets the id for the tag at the index
+    private string GetTagId(int index){
+        string subString = textObj.text.Substring(index);
+
+        //regex to find the link id
+        Match match = Regex.Match(subString, @"<link=(.*?)>");
+
+        if (match.Success && match.Groups.Count > 1){
+            return match.Groups[1].Value;
+        }
+        return null;
+    
+    }
+
+    private string AddPercentToHex(string hexColor, int percentageToAdd)
     {
         //convert hex to percentage (00 to FF = 0% to 100%)
         int intValue = int.Parse(hexColor, System.Globalization.NumberStyles.HexNumber);
@@ -280,13 +297,13 @@ public class DialogueSystem : MonoBehaviour
     }
 
     //add the tag at the given index
-    private void addTag(int rawIndex, string tag){
+    private void AddTag(int rawIndex, string tag){
         textObj.text = textObj.text.Insert(rawIndex, tag);
         currentCharIndex+=tag.Length;
     }
 
     //removes the tag at the given index
-    private void removeTag(int rawIndex, string tag){
+    private void RemoveTag(int rawIndex, string tag){
         textObj.text = textObj.text.Remove(rawIndex, tag.Length);
         currentCharIndex-=tag.Length;        
     }
@@ -373,15 +390,15 @@ public class DialogueSystem : MonoBehaviour
             bookmark=part;
         }
 
-        public List<DialogueEntry> getCurrentRoute(){
+        public List<DialogueEntry> GetCurrentRoute(){
             return currentRoute;
         }
 
-        public DialogueEntry getCurrentEntry(){
+        public DialogueEntry GetCurrentEntry(){
             return currentRoute[bookmark];
         }
 
-        public DialogueEntry getCurrentEntryAndIncrement(){
+        public DialogueEntry GetCurrentEntryAndIncrement(){
             DialogueEntry entry = currentRoute[bookmark];
 
             //if the current entry was NOT the end of the chapter, then move the bookmark to the next entry
@@ -392,18 +409,18 @@ public class DialogueSystem : MonoBehaviour
             return entry;
         }
 
-        public DialogueEntry getEntry(int i){
+        public DialogueEntry GetEntry(int i){
             return currentRoute[i];
         }
 
-        public void setBookmark(int num){
+        public void SetBookmark(int num){
             bookmark = num;
         }
-        public int getBookmark(){
+        public int GetBookmark(){
             return bookmark;
         }
 
-        public bool isEnd(){
+        public bool IsEnd(){
             return false;
         }
 
