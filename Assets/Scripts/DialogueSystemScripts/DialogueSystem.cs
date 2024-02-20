@@ -88,9 +88,9 @@ public class DialogueSystem : MonoBehaviour
         book.LoadChapter(chapter1);
 
         //make sure the counters are counted correctly at the start
-        // currentShownCharacters = textObj.textInfo.characterCount;
-        // textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
-        // currentCharIndex = textObj.text.Length;
+        currentShownCharacters = textObj.textInfo.characterCount;
+        textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+        currentCharIndex = textObj.text.Length;
     }
 
     private void OnEnable(){
@@ -123,7 +123,8 @@ public class DialogueSystem : MonoBehaviour
                     //if there's enough room for an alpha tag
                     if (index+aTagLength<=textObj.text.Length-1) {
                         //if there is indeed an alpha tag here and it is a fade tag
-                        if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
+                        if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
+                        // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                             textObj.text = textObj.text.Remove(index, aTagLength);
                         }
                     }
@@ -136,51 +137,44 @@ public class DialogueSystem : MonoBehaviour
                 //TODO
             } 
             else { //otherwise start displaying the next entry
-                //adds words to the dialogue box (they start as invisible)
-                string text = book.GetCurrentEntryAndIncrement().dialogue;
-                if (text.Length>=1){
-                    //automatically adds a space between sentences when not on a new line
-                    if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
-                        text = " "+ text;
-                    }
-                    //automatically adds white space when on a new line, or adds white space 
-                    //when on a new page
-                    else if (text.Substring(0,1)=="\n"){
-                        text = text.Replace("\n", $"\n{newLineSpace}");
-                    } 
-                    //when on a new page
-                    else if (textObj.textInfo.characterCount==0){
-                        text = newLineSpace+text;
-                    }
-                }
-    
-                //add the text to the textObj
-                textObj.text += text;
+                DialogueEntry currentEntry =  book.GetCurrentEntryAndIncrement();
+                string text = "";
 
-                // check if lines have exceeded maxLines
-                // TODO
+                //if we haven't reached the end yet, then continue displaying
+                if (!book.IsEnd()){
+                    text = currentEntry.dialogue;
+                    text = postprocessText(text);
 
-                // ===================== DIM TAGS =============================
-                // if the text doesn't have the dim tags yet, add them 
-                if (textObj.text.Length>=dimTagLength){
-                    if (textObj.text.Substring(0, dimTagLength)!=dimTag){
+                    //add the text to the textObj 
+                    textObj.text += text;
+
+                    // check if lines have exceeded maxLines
+                    // TODO
+
+                    // ===================== DIM TAGS =============================
+                    // if the text doesn't have the dim tags yet, add them 
+                    if (textObj.text.Length>=dimTagLength){
+                        if (textObj.text.Substring(0, dimTagLength)!=dimTag){
+                            AddTag(0, dimTag);
+                        }
+                    } else {
                         AddTag(0, dimTag);
                     }
+
+                    // remove the old undim tag and place the new undim tag
+                    if (undimTagIndex!=-1){
+                        RemoveTag(undimTagIndex, undimTag);
+                    }
+                    undimTagIndex=currentCharIndex;
+                    AddTag(currentCharIndex, undimTag);
                 } else {
-                    AddTag(0, dimTag);
+                    Debug.Log("Chapter Ended");
                 }
 
-                // remove the old undim tag and place the new undim tag
-                if (undimTagIndex!=-1){
-                    RemoveTag(undimTagIndex, undimTag);
-                }
-                undimTagIndex=currentCharIndex;
-                AddTag(currentCharIndex, undimTag);
                 // ============================================================
-
-
                 //handle letters
                 // textObj.maxVisibleCharacters=currentShownCharacters;
+
             }
 
         }
@@ -193,6 +187,26 @@ public class DialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    //adds newline indentation or automatically adds a space between sentences
+    private string postprocessText(string text){
+        if (text.Length>=1){
+            //automatically adds a space between sentences when not on a new line
+            if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
+                text = " "+ text;
+            }
+            //automatically adds white space when on a new line, or adds white space 
+            //when on a new page
+            else if (text.Substring(0,1)=="\n"){
+                text = text.Replace("\n", $"\n{newLineSpace}");
+            } 
+            //when on a new page
+            else if (textObj.textInfo.characterCount==0){
+                text = newLineSpace+text;
+            } 
+        }
+        return text;
+    }
+
     private void AddLettersToScreen(){
         int currentTextLength = textObj.text.Length;
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
@@ -203,7 +217,8 @@ public class DialogueSystem : MonoBehaviour
                 //if there's enough letters to possibly house another alpha tag, then continue
                 if (index+aTagLength<=currentTextLength-1) {
                     //if there is an alpha tag here and it is a fade tag
-                    if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
+                    if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
+                    // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
                         string hex = oldTag.Substring(8, 2);
@@ -230,8 +245,8 @@ public class DialogueSystem : MonoBehaviour
 
         //display the next letter at the routine time
         if (displayTimer >= displaySpeed){
-            // Debug.Log("Entered");
-            if (currentShownCharacters<textObj.textInfo.characterCount){
+            //if there are more letters to fade in
+            if (currentShownCharacters<textObj.textInfo.characterCount){                
                 //add the alpha tag
                 AddTag(currentCharIndex, aTag1);
 
@@ -331,21 +346,33 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //convert percent back to hex
-        intValue = (int)Math.Round(percentageValue / 100 * 255);
+        intValue = (int) Math.Round(percentageValue / 100 * 255);
         string newHexColor = intValue.ToString("X2");
 
         return newHexColor;
     }
 
     //add the tag at the given index
-    private void AddTag(int rawIndex, string tag){
-        textObj.text = textObj.text.Insert(rawIndex, tag);
+    private void AddTag(int index, string tag){
+        //happens if user puts into edits text in editor
+        if (index>=textObj.text.Length){
+            Debug.Log("Invalid Index");
+            currentShownCharacters = textObj.textInfo.characterCount;
+            textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+            currentCharIndex = textObj.text.Length;
+            return;
+        }
+        textObj.text = textObj.text.Insert(index, tag);
         currentCharIndex+=tag.Length;
     }
 
     //removes the tag at the given index
-    private void RemoveTag(int rawIndex, string tag){
-        textObj.text = textObj.text.Remove(rawIndex, tag.Length);
+    private void RemoveTag(int index, string tag){
+        if (index>=textObj.text.Length){
+            Debug.Log("Invalid Index");
+            return;
+        }
+        textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
     }
 
@@ -462,7 +489,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         public bool IsEnd(){
-            return false;
+            return GetCurrentEntry().name==endName;
         }
 
     }
