@@ -732,7 +732,7 @@ MonoBehaviour:
   displaySpeed: 0.029999999329447746
   fadeSpeed: 0.004000000189989805
   dialogueFolderPath: Assets/Dialogue/
-  chapter1: {fileID: 4900000, guid: c92659bd5e6d47f4780d3c148a9a1f6b, type: 3}
+  chapter1: {fileID: 4900000, guid: edc96a6bcc327de41837f47c8c4203f3, type: 3}
 --- !u!114 &1331631635
 MonoBehaviour:
   m_ObjectHideFlags: 0

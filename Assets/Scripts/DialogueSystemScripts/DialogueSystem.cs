@@ -56,7 +56,7 @@ public class DialogueSystem : MonoBehaviour
     private double fadeTimer = 0.0f;
     [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.001f, 10f)]
     private double fadeSpeed = 0.004f; //adjust as needed
-    [SerializeField] [Tooltip("File Path for Dialogue files")]
+    [SerializeField] [Tooltip("(default: Assets/Dialogue/) File Path for Dialogue files. Make sure to also have subfolders here called 'JSONs' and 'TSVs'")]
     private string dialogueFolderPath = "Assets/Dialogue/";
 
     //the main data object that holds the dialogue information
@@ -98,7 +98,7 @@ public class DialogueSystem : MonoBehaviour
     }
 
     private void batchConvertJSONtoTSV(){
-        ConvertJSONToTSV("chapter1_copy.json", "chapter1_copy.tsv");
+        ConvertJSONToTSV("chapter1.json", "chapter1.tsv");
     }
 
     private void OnEnable(){
