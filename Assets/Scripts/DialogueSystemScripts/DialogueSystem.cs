@@ -130,12 +130,10 @@ public class DialogueSystem : MonoBehaviour
                 //TODO
             } 
             else { //otherwise start displaying the next entry
-                DialogueEntry currentEntry =  book.GetCurrentEntryAndIncrement();
-                string text = "";
-
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
-                    text = currentEntry.dialogue;
+                    DialogueEntry currentEntry = book.GetCurrentEntryAndIncrement();
+                    string text = currentEntry.dialogue;
                     text = postprocessText(text);
 
                     //add the text to the textObj 
@@ -412,12 +410,12 @@ public class DialogueSystem : MonoBehaviour
     //each entry must have these fields
     [System.Serializable]
     public class DialogueEntry{
+        public string route;
         public string name;
         public string dialogue;
-        public string route;
-        public string voiceFile;
-
         public string commands; //might be beyond scope of dialogue system
+        public string voice;
+
         //example 
         /*
         .swap Aoko Aoko_happy
@@ -425,6 +423,13 @@ public class DialogueSystem : MonoBehaviour
         .move Aoko left 100 2
             moves gameObject with the name "Aoko" to the left 100 pixels within 2 seconds
         */
+        public DialogueEntry(){
+            route="";
+            name="";
+            dialogue="";
+            commands="";
+            voice="";
+        }
     }
 
     [System.Serializable]
@@ -437,6 +442,8 @@ public class DialogueSystem : MonoBehaviour
         private int bookmark=0;
         //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         private string endName = ".END";
+
+        private string defaultRoute = "1";
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
@@ -451,7 +458,7 @@ public class DialogueSystem : MonoBehaviour
             // foreach (DialogueEntry entry in wrapper.dialogueEntries)
             // {
             //     Debug.Log(entry.name+": " + entry.dialogue);
-            //     Debug.Log(entry.voiceFile+": " + entry.commands);
+            //     Debug.Log(entry.voice+": " + entry.commands);
             // }
 
             LoadIntoDictionary(wrapper);
@@ -467,11 +474,10 @@ public class DialogueSystem : MonoBehaviour
                 }
                 //add the entry to that route
                 currentChapter[entry.route].Add(entry);
-                    
             }
 
             //sets the current route of this chapter to the 1st (default) route
-            currentRoute = currentChapter["1"];
+            currentRoute = currentChapter[defaultRoute];
         }
 
         //moves the current route to another route or another entry (part of the route)
@@ -489,12 +495,16 @@ public class DialogueSystem : MonoBehaviour
         }
 
         public DialogueEntry GetCurrentEntryAndIncrement(){
-            DialogueEntry entry = currentRoute[bookmark];
-
-            //if the current entry was NOT the end of the chapter, then move the bookmark to the next entry
-            if (entry.name!=endName){
-                bookmark++;
+            DialogueEntry entry;
+            if (IsEnd()){
+                entry = new DialogueEntry();
+                entry.dialogue = "REACHED END OF ROUTE";
+                Debug.Log("Reached the End");
+                return entry;
             }
+
+            entry = currentRoute[bookmark];
+            bookmark++;
 
             return entry;
         }
@@ -511,8 +521,17 @@ public class DialogueSystem : MonoBehaviour
         }
 
         public bool IsEnd(){
-            return GetCurrentEntry().name==endName;
+            if (bookmark >= currentRoute.Count){
+                Debug.Log("reached the end of the route");
+                return true;
+            }
+            return false;
+            // return GetCurrentEntry().name==endName;
         }
+
+    }
+
+    public class TextBook : Book {
 
     }
 
