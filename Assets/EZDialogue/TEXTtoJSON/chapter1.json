@@ -1,0 +1,32 @@
+{
+    "dialogueEntries": [
+        {
+            "route": "1",
+            "name": "",
+            "dialogue": "Two hours had passed and the clock struck nine.",
+            "commands": "move(Aoko, x, y, t1, t2)",
+            "voice": ""
+        },
+        {
+            "route": "1",
+            "name": "",
+            "dialogue": "\n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.",
+            "commands": "",
+            "voice": ""
+        },
+        {
+            "route": "1",
+            "name": "",
+            "dialogue": "",
+            "commands": "move(Aoko, x, y, t1, t2)",
+            "voice": ""
+        },
+        {
+            "route": "1",
+            "name": "Aoko",
+            "dialogue": "\n\n\"To be honest, I didn't really want to leave it to Tobimaru like this.\"",
+            "commands": "",
+            "voice": "/voice_files/aoko_route1_1.mp3"
+        }
+    ]
+}
