@@ -94,6 +94,7 @@ public class DialogueSystem : MonoBehaviour
         //batchConvertTSVtoJSON();
         Textbook tbook = new Textbook();
         tbook.LoadChapter("Assets/Text(deprecated)/chapter1.txt");
+        tbook.ParseAllEntries();
         
     }
 
@@ -633,48 +634,124 @@ public class DialogueSystem : MonoBehaviour
         private string defaultRoute = defaultRouteName;
 
         //for dynamically accessing the text file
-        private string pointerRoute = defaultRouteName;
+        private string pointerRoute = null;
         private int pointer=0;
         string[] lines;
+        string filepath;
 
         public Textbook(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
         }
 
         //reads in a chapter file and returns a list of name/text/.../command entries
-        public void LoadChapter(string filepath){
-            lines = File.ReadAllLines(filepath);
+        public void LoadChapter(string path){
+            filepath = path;
+            RefreshLines();
             pointer = 0;
         }
 
+        public void RefreshLines(){
+            lines = File.ReadAllLines(filepath);
+        }
+
+        //parses all entries and loads into the dictionary
         public void ParseAllEntries(){
             List<DialogueEntry> list = new List<DialogueEntry>();
             string currentRoute = "1";
 
             DialogueEntry entry = new DialogueEntry();
+
+            int insurance = 100000;
             while (entry != null){
                 entry = ParseNextEntry();
                 if (entry != null){
                     list.Add(entry);
                 }
+
+                insurance--;
+                if (insurance==0){
+                    Debug.Log("hit insurance");
+                    break;
+                }
             }
+            DialogueWrapper dw = new DialogueWrapper();
+            dw.dialogueEntries = list;
+
+            foreach(DialogueEntry e in dw.dialogueEntries){
+                Debug.Log("Route: "+e.route);
+                Debug.Log("Name: "+e.name);
+                Debug.Log("Dialog: "+e.dialogue);
+                Debug.Log("Commands: "+e.commands);
+                Debug.Log("Voice: "+e.voice);
+                Debug.Log("");
+            }
+
+            LoadIntoDictionary(dw);
         }
 
         //gets the next entry block from the text file
         public DialogueEntry ParseNextEntry(){
+            //refresh lines so you can dynamically change the file while in game
+            RefreshLines();
+
             DialogueEntry entry = new DialogueEntry();
             string line;
+            bool blockFound = false;
+            int insurance = 1000000;
+
+            string[] nameAndDialogue = null;
+            string commands = null;
+            string voice = null;
 
             //loop through the lines until you find a dialogueEntry block
             while(pointer < lines.Length){
-                line = lines[pointer].Trim();
-                
+                line = lines[pointer].Trim(); //trim the line
+                pointer++; //move pointer
+                insurance--; //make sure no infinite loop happens
+                if (insurance==0){
+                    Debug.Log("hit insurance 2");
+                    break;
+                }
+
+                //continue if haven't found block yet, return if found end of block
+                if (line.Length==0){
+                    if (blockFound){
+                        return entry;
+                    } else {
+                        continue;
+                    }
+                }
+                if (IsCommentLine(line)) continue;
+
+                string typeOfLine = HasKeyWord(line);
+                if (HasKeyWord(line)!=null){
+                    if (typeOfLine==".route"){
+                        pointerRoute = ParseRoute(line, pointerRoute);
+                        entry.route = pointerRoute;
+                    } else if (typeOfLine==".say"){
+                        nameAndDialogue = ParseDialogue(line, nameAndDialogue);
+                        entry.name = nameAndDialogue[0];
+                        entry.dialogue = nameAndDialogue[1];
+                        blockFound = true;
+                    } else if (typeOfLine==".func"){
+                        commands = ParseCommandsBasic(line, commands);
+                        entry.commands = commands;
+                        blockFound = true;
+                    } else if (typeOfLine==".voice"){
+                        voice = ParseVoice(line, voice);
+                        entry.voice = voice;
+                        blockFound = true;
+                    } else {
+                        Debug.Log("WEIRD THING HAPPENED IN PARSENEXTENTRY() FUNCTION");
+                    }
+                }
+                // DialogueEntry entry = new DialogueEntry();
             }
 
-            return entry;
+            return null;
         }
 
-        public bool isCommentLine(string line){
+        public bool IsCommentLine(string line){
             if (line.Length>=1){
                 if (line[0]=='#'){
                     return true;
@@ -683,13 +760,88 @@ public class DialogueSystem : MonoBehaviour
             return false;
         }
 
-        public string ParseDialogue(string line){
-            int loc = line.IndexOf(".say ");
-            if (loc!=-1){
-                Debug.Log(line);
+        //verifies that if there's a keyword, then it must be formatted correctly (space after it)
+        public string HasKeyWord(string line){
+            string[] list = new string[4];
+            list[0]=".route";
+            list[1]=".say";
+            list[2]=".func";
+            list[3]=".voice";
+
+            int index = -1;
+            //if there is indeed a dot
+            foreach (string command in list){
+                index = line.IndexOf(command);
+
+                //if it was found 
+                if (index!=-1){
+                    return command;
+                }
+                
+                //verify that there are not multiple of them
+                // int indexOther = line.Substring(index+command.Length).IndexOf(command);
+                // if (indexOther!=-1){
+                //     Debug.Log()
+                // }             
             }
 
-            return "";
+            return null;
+        }
+
+        //parse as dialogue
+        public string[] ParseDialogue(string line, string[] nameAndDialogue){
+            string[] list = new string[2];
+            string type = ".say";
+            int loc = line.IndexOf(type);
+            if (loc!=-1){
+                if (nameAndDialogue!=null){
+                    Debug.Log("Multiple .say lines in same block on line "+pointer);
+                    //throw exception?
+                }
+
+                list[0] = line.Substring(0, loc).Trim();
+                list[1] = line.Substring(loc + type.Length).Trim();
+                return list;
+            }
+            return nameAndDialogue;
+        }
+
+        public string ParseVoice(string line, string oldVoice){
+            string voice = oldVoice;
+            string type = ".voice";
+            int loc = line.IndexOf(type);
+            if (loc!=-1){
+                if (oldVoice!=null){
+                    Debug.Log("Multiple .voice lines in same block on line "+pointer);
+                }
+                voice = line.Substring(loc + type.Length).Trim();
+            }
+            return voice;
+        }
+        public string ParseCommandsBasic(string line, string oldCommands){
+            string commands = oldCommands;
+            string type = ".func";
+            int loc = line.IndexOf(type);
+            if (loc!=-1){
+                if (oldCommands!=null){
+                    Debug.Log("Multiple .func lines in same block on line "+pointer);
+                }
+
+                commands = line.Substring(loc + type.Length).Trim();
+            }
+            return commands;
+        }
+        public string ParseRoute(string line, string oldRoute){
+            string route = null;
+            string type = ".route";
+            int loc = line.IndexOf(type);
+            if (loc!=-1){
+                if (oldRoute!=null){
+                    Debug.Log("Multiple .route lines in same block on line "+pointer);
+                }
+                route = line.Substring(loc + type.Length).Trim();
+            } 
+            return route;
         }
     }
 
