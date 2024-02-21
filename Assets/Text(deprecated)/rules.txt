@@ -1,5 +1,6 @@
 1. to denote the end of a chapter, make another entry and set the name to ".END" (you can leave everything else empty)
-2. .
+2. use <line-indent=15%> if you want to indent stuff. see tmpro rich text for other tips and tricks. just don't use the id tags or you might break my code :(
+3. 
 
 TODO
 1. make it so text continues via click only if the a certain region on the screen is clicked
