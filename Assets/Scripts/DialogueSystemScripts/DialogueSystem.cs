@@ -56,6 +56,8 @@ public class DialogueSystem : MonoBehaviour
     private double fadeTimer = 0.0f;
     [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.001f, 10f)]
     private double fadeSpeed = 0.004f; //adjust as needed
+    [SerializeField] [Tooltip("File Path for Dialogue files")]
+    private string dialogueFolderPath = "Assets/Dialogue/";
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -85,6 +87,18 @@ public class DialogueSystem : MonoBehaviour
         //make sure the counters are counted correctly at the start
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
+
+        //DEV TOOLS
+        //batchConvertTSVtoJSON();
+        
+    }
+
+    private void batchConvertTSVtoJSON(){
+        convertTSVtoJSON("chapter1.tsv", "chapter1.json");
+    }
+
+    private void batchConvertJSONtoTSV(){
+        ConvertJSONToTSV("chapter1_copy.json", "chapter1_copy.tsv");
     }
 
     private void OnEnable(){
@@ -396,6 +410,72 @@ public class DialogueSystem : MonoBehaviour
         currentCharIndex-=tag.Length;        
     }
 
+    public void convertTSVtoJSON(string tsvName, string jsonName){
+        Debug.Log("Attempting to convert "+tsvName);
+
+        string tsvFilePath = dialogueFolderPath+"TSVs/"+tsvName;
+        string jsonFilePath = dialogueFolderPath+"JSONs/"+jsonName;
+        string[] lines = File.ReadAllLines(tsvFilePath);
+
+        DialogueWrapper dialogueData = new DialogueWrapper();
+        
+        dialogueData.dialogueEntries = new List<DialogueEntry>();
+
+        int attributes=1;
+        foreach (string line in lines)
+        {
+            //ignore the 1st line
+            if (attributes==1){
+                attributes--;
+                continue;
+            }
+
+            string[] parts = line.Split('\t'); // Assuming tab-separated values
+
+            if (parts.Length >= 5)
+            {
+                var dialogueEntry = new DialogueEntry();
+                dialogueEntry.route = parts[0];
+                dialogueEntry.name = parts[1];
+
+                // Preserve newline characters and escape quotes in the dialogue
+                dialogueEntry.dialogue = parts[2].Replace("\\n", "\n");
+
+                dialogueEntry.commands = parts[3];
+                dialogueEntry.voice = parts[4];
+
+                dialogueData.dialogueEntries.Add(dialogueEntry);
+            }
+        }
+
+        string json = JsonUtility.ToJson(dialogueData, true);
+        File.WriteAllText(jsonFilePath, json);
+        Debug.Log(tsvName+ " successfully converted to " + jsonName);
+    }
+
+    public void ConvertJSONToTSV(string jsonName, string tsvName)
+    {
+        Debug.Log("Attempting to convert "+tsvName);
+        string tsvFilePath = dialogueFolderPath+"TSVs/"+tsvName;
+        string jsonFilePath = dialogueFolderPath+"JSONs/"+jsonName;
+
+        string json = File.ReadAllText(jsonFilePath);
+        DialogueWrapper dialogueData = JsonUtility.FromJson<DialogueWrapper>(json);
+
+        using (StreamWriter writer = new StreamWriter(tsvFilePath))
+        {
+            writer.WriteLine("route\tname\tdialogue\tcommands\tvoice");
+
+            foreach (DialogueEntry entry in dialogueData.dialogueEntries)
+            {
+                string dialogue = entry.dialogue.Replace("\n", "\\n");
+                //tab-separate it
+                writer.WriteLine($"{entry.route}\t{entry.name}\t{dialogue}\t{entry.commands}\t{entry.voice}");
+            }
+        }
+
+        Debug.Log(jsonName + " successfully converted to "+tsvName);
+    }
 
 
 // ============== INNER CLASSES =========================================
@@ -405,6 +485,10 @@ public class DialogueSystem : MonoBehaviour
     [System.Serializable]
     public class DialogueWrapper{
         public List<DialogueEntry> dialogueEntries;
+
+        public DialogueWrapper(){
+            dialogueEntries = new List<DialogueEntry>();
+        }
     }
     //required for deserializing json as described above
     //each entry must have these fields
@@ -528,10 +612,6 @@ public class DialogueSystem : MonoBehaviour
             return false;
             // return GetCurrentEntry().name==endName;
         }
-
-    }
-
-    public class TextBook : Book {
 
     }
 

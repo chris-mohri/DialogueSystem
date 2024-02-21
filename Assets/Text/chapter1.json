@@ -3,7 +3,7 @@
       {
         "route": 1,
         "name": "",
-        "dialogue": "Two hours had passed and the clock struck nine.",
+        "dialogue": "Two hours had passed, and the clock struck nine.",
         "commands": "",
         "voice": ""
       },
@@ -116,7 +116,7 @@
         "route": 1,
         "name": "",
         "dialogue": "Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.",
-        "commands": "",
+        "commands": "goTo(1)",
         "voice": ""
       }
     ]

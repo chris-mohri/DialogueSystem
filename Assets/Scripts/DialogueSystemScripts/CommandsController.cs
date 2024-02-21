@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EffectController : MonoBehaviour
+public class CommandsController : MonoBehaviour
 {
 
     string baseImgDirectory = "Assets/Images/";
