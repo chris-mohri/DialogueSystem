@@ -58,6 +58,8 @@ public class DialogueSystem : MonoBehaviour
     private double fadeSpeed = 0.004f; //adjust as needed
     [SerializeField] [Tooltip("(default: Assets/Dialogue/) File Path for Dialogue files. Make sure to also have subfolders here called 'JSONs' and 'TSVs'")]
     private string dialogueFolderPath = "Assets/Dialogue/";
+    [SerializeField] [Tooltip("(default: 1) Default Route name in the story")]
+    private static string defaultRouteName = "1";
 
     //the main data object that holds the dialogue information
     private Book book;
@@ -90,6 +92,8 @@ public class DialogueSystem : MonoBehaviour
 
         //DEV TOOLS
         //batchConvertTSVtoJSON();
+        Textbook tbook = new Textbook();
+        tbook.LoadChapter("Assets/Text(deprecated)/chapter1.txt");
         
     }
 
@@ -477,6 +481,8 @@ public class DialogueSystem : MonoBehaviour
         Debug.Log(jsonName + " successfully converted to "+tsvName);
     }
 
+    
+
 
 // ============== INNER CLASSES =========================================
 
@@ -526,8 +532,7 @@ public class DialogueSystem : MonoBehaviour
         private int bookmark=0;
         //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         private string endName = ".END";
-
-        private string defaultRoute = "1";
+        private string defaultRoute = defaultRouteName;
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
@@ -613,6 +618,79 @@ public class DialogueSystem : MonoBehaviour
             // return GetCurrentEntry().name==endName;
         }
 
+    }
+
+    [System.Serializable]
+    public class Textbook: Book{
+        //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
+        private Dictionary<string, List<DialogueEntry>> currentChapter;
+        //the list of entries of the current route
+        private List<DialogueEntry> currentRoute;
+        //saves the index for the current dialogueEntry in currentRoute
+        private int bookmark=0;
+        //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
+        private string endName = ".END";
+        private string defaultRoute = defaultRouteName;
+
+        //for dynamically accessing the text file
+        private string pointerRoute = defaultRouteName;
+        private int pointer=0;
+        string[] lines;
+
+        public Textbook(){
+            currentChapter = new Dictionary<string, List<DialogueEntry>>();
+        }
+
+        //reads in a chapter file and returns a list of name/text/.../command entries
+        public void LoadChapter(string filepath){
+            lines = File.ReadAllLines(filepath);
+            pointer = 0;
+        }
+
+        public void ParseAllEntries(){
+            List<DialogueEntry> list = new List<DialogueEntry>();
+            string currentRoute = "1";
+
+            DialogueEntry entry = new DialogueEntry();
+            while (entry != null){
+                entry = ParseNextEntry();
+                if (entry != null){
+                    list.Add(entry);
+                }
+            }
+        }
+
+        //gets the next entry block from the text file
+        public DialogueEntry ParseNextEntry(){
+            DialogueEntry entry = new DialogueEntry();
+            string line;
+
+            //loop through the lines until you find a dialogueEntry block
+            while(pointer < lines.Length){
+                line = lines[pointer].Trim();
+                
+            }
+
+            return entry;
+        }
+
+        public bool isCommentLine(string line){
+            if (line.Length>=1){
+                if (line[0]=='#'){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string ParseDialogue(string line){
+            int loc = line.IndexOf(".say ");
+            if (loc!=-1){
+                Debug.Log(line);
+            }
+
+            return "";
+        }
     }
 
     /*

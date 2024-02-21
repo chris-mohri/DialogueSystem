@@ -5,6 +5,7 @@
 
 .route 1
     .say Two hours had passed and the clock struck nine.
+    .voice
     .func spawn(Aoko, x, y, t1) move(Aoko, x, y, t1, t2)
 
     .say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.
