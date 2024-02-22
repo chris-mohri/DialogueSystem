@@ -7,6 +7,7 @@
 	.say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.
 	.func move(Aoko, x, y, t1, t2)
 
+.label happy
 	Aoko .say \n\n"To be honest, I didn't really want to leave it to Tobimaru like this."
 	.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1, fade=true)
 	.voice Aoko/chapter1/part1.mp3
@@ -40,7 +41,7 @@
 	.say Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.
 
 	#displays to the screen 
-	.func choose(["Aoko, you speak too much", "Stay silent"], [".route 1a", ".route 1b"])
+	.func choose(["Aoko, you speak too much", "Stay silent"], ["label happy", "route 1b"])
 	.func jump("1", ["1a"]) jump("1b", ["1b"])
 	
 .route 1b

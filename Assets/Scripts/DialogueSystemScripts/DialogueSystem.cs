@@ -94,7 +94,7 @@ public class DialogueSystem : MonoBehaviour
 
         //DEV TOOLS
         book = new Textbook();
-        book.allowDynamicReading = true;
+        // book.allowDynamicReading = true;
         book.LoadChapter("chapter1.txt");
         book.Export();
     }
@@ -473,6 +473,7 @@ public class DialogueSystem : MonoBehaviour
         public string dialogue;
         public string commands; //might be beyond scope of dialogue system
         public string voice;
+        public string label;
 
         //example 
         /*
@@ -487,6 +488,7 @@ public class DialogueSystem : MonoBehaviour
             dialogue="";
             commands="";
             voice="";
+            label="";
         }
     }
 
@@ -729,6 +731,7 @@ public class DialogueSystem : MonoBehaviour
             string[] nameAndDialogue = null;
             string commands = null;
             string voice = null;
+            string label = null;
 
             //loop through the lines until you find a dialogueEntry block
             while(pointer < lines.Length){
@@ -783,6 +786,10 @@ public class DialogueSystem : MonoBehaviour
                         voice = ParseVoice(line, voice);
                         entry.voice = voice;
                         blockFound = true;
+                    } else if (typeOfLine==".label"){
+                        label = ParseLabel(line, label);
+                        entry.label = label;
+                        label = null;
                     } else {
                         Debug.Log("WEIRD THING HAPPENED IN PARSENEXTENTRY() FUNCTION");
                     }
@@ -808,27 +815,22 @@ public class DialogueSystem : MonoBehaviour
 
         //verifies that if there's a keyword, then it must be formatted correctly (space after it)
         private string HasKeyWord(string line){
-            string[] list = new string[4];
+            string[] list = new string[5];
             list[0]=".route";
             list[1]=".say";
             list[2]=".func";
             list[3]=".voice";
+            list[4]=".label";
 
             int index = -1;
             //if there is indeed a dot
             foreach (string command in list){
                 index = line.IndexOf(command);
 
-                //if it was found 
+                //if it was found
                 if (index!=-1){
                     return command;
-                }
-                
-                //verify that there are not multiple of them
-                // int indexOther = line.Substring(index+command.Length).IndexOf(command);
-                // if (indexOther!=-1){
-                //     Debug.Log()
-                // }             
+                }         
             }
 
             return null;
@@ -866,6 +868,7 @@ public class DialogueSystem : MonoBehaviour
             }
             return voice;
         }
+
         private string ParseCommandsBasic(string line, string oldCommands){
             string commands = oldCommands;
             string type = ".func";
@@ -883,7 +886,7 @@ public class DialogueSystem : MonoBehaviour
             return commands;
         }
         private string ParseRoute(string line, string oldRoute){
-            string route = null;
+            string route = oldRoute;
             string type = ".route";
             int loc = line.IndexOf(type);
             if (loc!=-1){
@@ -892,8 +895,17 @@ public class DialogueSystem : MonoBehaviour
                 // }
                 route = line.Substring(loc + type.Length).Trim();
             } 
-
             return route;
+        }
+
+        private string ParseLabel(string line, string oldLabel){
+            string label = oldLabel;
+            string type = ".label";
+            int loc = line.IndexOf(type);
+            if (loc!=-1){
+                label = line.Substring(loc + type.Length).Trim();
+            } 
+            return label;
         }
 
         public override void Export(){
@@ -941,6 +953,10 @@ public class DialogueSystem : MonoBehaviour
                     if (!list.Contains(entry.route)){
                         line += $".route {entry.route}\n";
                         list.Add(entry.route);
+                    }
+
+                    if (entry.label!=""){
+                        line += $".label {entry.label}\n";
                     }
 
                     if (entry.dialogue != ""){
