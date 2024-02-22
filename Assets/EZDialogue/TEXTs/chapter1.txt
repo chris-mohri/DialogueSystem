@@ -41,9 +41,8 @@
 	.say Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.
 
 	#displays to the screen 
-	.func .choose(["Aoko, you speak too much", "Stay silent"], ["1a", "1b"])
-	.func .jump("label happy", ["1a"]) jump("1b", ["1b"])
-	.func if routeInfo.has("1a") and inventory.has() then 
+	.func c1_1()
+
 	
 .route 1b
 	Aoko .say "Staying silent, Alice?"

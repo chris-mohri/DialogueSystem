@@ -28,15 +28,31 @@ public class CommandsController : MonoBehaviour
         
     }
 
+    //uses reflection to be able to invoke methods
     public void alisterInvoke(string line){
+        
+    }
 
+    //chapter 1 func
+    public void c1_1(){
+        
+        // choose(["Aoko, you speak too much", "Stay silent"], ["1a", "1b"]);
+        // if (routeInfo.Contains("1a")){
+        //     jump("route 1");
+        // } else {
+        //     jump("label happy");
+        // } 
     }
 
     //choices = what is displayed on screen
     //result = items to be added to inventory
     //jump = route to jump to 
-    public void choose(List<string> choices, List<string> result, List<string> jump){
+    public void choose(List<string> choices, List<string> result){
 
+    }
+
+    public void jump(string toJumpTo){
+        
     }
 
     // INSERT CUSTOM SCRIPTS HERE 

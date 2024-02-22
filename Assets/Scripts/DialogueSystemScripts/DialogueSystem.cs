@@ -64,9 +64,8 @@ public class DialogueSystem : MonoBehaviour
     [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
     private bool autoCreateDirectories = true;
 
-    //the main data object that holds the dialogue information
-    private Book book;
-    // private string endName = ".END";
+    //the main data object that holds the dialogue information. must be accessible to CommandsController
+    public Book book;
 
     void Awake(){
         //creates the player controls
