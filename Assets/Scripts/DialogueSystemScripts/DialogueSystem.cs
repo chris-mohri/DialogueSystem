@@ -94,8 +94,8 @@ public class DialogueSystem : MonoBehaviour
 
         //DEV TOOLS
         Textbook tbook = new Textbook();
-        tbook.LoadChapter("chapter1.json");
-        tbook.ExportToText();
+        tbook.LoadChapter("chapter1.txt");
+        tbook.Export();
     }
 
     private void SetupFolders(){
@@ -438,77 +438,6 @@ public class DialogueSystem : MonoBehaviour
         currentCharIndex-=tag.Length;        
     }
 
-    /*
-
-    public void convertTSVtoJSON(string tsvName, string jsonName){
-        Debug.Log("Attempting to convert "+tsvName);
-
-        string tsvFilePath = dialogueFolderPath+"TSVs/"+tsvName;
-        string jsonFilePath = dialogueFolderPath+"JSONs/"+jsonName;
-        string[] lines = File.ReadAllLines(tsvFilePath);
-
-        DialogueWrapper dialogueData = new DialogueWrapper();
-        
-        dialogueData.dialogueEntries = new List<DialogueEntry>();
-
-        int attributes=1;
-        foreach (string line in lines)
-        {
-            //ignore the 1st line
-            if (attributes==1){
-                attributes--;
-                continue;
-            }
-
-            string[] parts = line.Split('\t'); // Assuming tab-separated values
-
-            if (parts.Length >= 5)
-            {
-                var dialogueEntry = new DialogueEntry();
-                dialogueEntry.route = parts[0];
-                dialogueEntry.name = parts[1];
-
-                // Preserve newline characters and escape quotes in the dialogue
-                dialogueEntry.dialogue = parts[2].Replace("\\n", "\n");
-
-                dialogueEntry.commands = parts[3];
-                dialogueEntry.voice = parts[4];
-
-                dialogueData.dialogueEntries.Add(dialogueEntry);
-            }
-        }
-
-        string json = JsonUtility.ToJson(dialogueData, true);
-        File.WriteAllText(jsonFilePath, json);
-        Debug.Log(tsvName+ " successfully converted to " + jsonName);
-    }
-
-    public void ConvertJSONToTSV(string jsonName, string tsvName)
-    {
-        Debug.Log("Attempting to convert "+tsvName);
-        string tsvFilePath = dialogueFolderPath+"TSVs/"+tsvName;
-        string jsonFilePath = dialogueFolderPath+"JSONs/"+jsonName;
-
-        string json = File.ReadAllText(jsonFilePath);
-        DialogueWrapper dialogueData = JsonUtility.FromJson<DialogueWrapper>(json);
-
-        using (StreamWriter writer = new StreamWriter(tsvFilePath))
-        {
-            writer.WriteLine("route\tname\tdialogue\tcommands\tvoice");
-
-            foreach (DialogueEntry entry in dialogueData.dialogueEntries)
-            {
-                string dialogue = entry.dialogue.Replace("\n", "\\n");
-                //tab-separate it
-                writer.WriteLine($"{entry.route}\t{entry.name}\t{dialogue}\t{entry.commands}\t{entry.voice}");
-            }
-        }
-
-        Debug.Log(jsonName + " successfully converted to "+tsvName);
-    }
-
-    */
-
 
 // ============== INNER CLASSES =========================================
 
@@ -552,6 +481,7 @@ public class DialogueSystem : MonoBehaviour
     public class Book{
         //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
         private Dictionary<string, List<DialogueEntry>> currentChapter;
+        DialogueWrapper wrapper;
         //the list of entries of the current route
         private List<DialogueEntry> currentRoute;
         //saves the index for the current dialogueEntry in currentRoute
@@ -567,16 +497,18 @@ public class DialogueSystem : MonoBehaviour
         public void LoadChapter(string file){ 
             try {
                 string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
-                DialogueWrapper wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
+                wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
 
-                // for debugging
-                // foreach (DialogueEntry entry in wrapper.dialogueEntries)
-                // {
-                //     Debug.Log(entry.name+": " + entry.dialogue);
-                //     Debug.Log(entry.voice+": " + entry.commands);
+                // foreach(DialogueEntry e in wrapper.dialogueEntries){
+                //     Debug.Log("Route: "+e.route);
+                //     Debug.Log("Name: "+e.name);
+                //     Debug.Log("Dialog: "+e.dialogue);
+                //     Debug.Log("Commands: "+e.commands);
+                //     Debug.Log("Voice: "+e.voice);
+                //     Debug.Log("========");
                 // }
 
-                LoadIntoDictionary(wrapper);
+                LoadIntoDictionary();
             }
 
             catch {
@@ -584,7 +516,7 @@ public class DialogueSystem : MonoBehaviour
             }
         }
 
-        public void LoadIntoDictionary(DialogueWrapper wrapper){
+        private void LoadIntoDictionary(){
             //create dictionary based on the different routes of each entry
             foreach (DialogueEntry entry in wrapper.dialogueEntries)
             {
@@ -595,7 +527,6 @@ public class DialogueSystem : MonoBehaviour
                 //add the entry to that route
                 currentChapter[entry.route].Add(entry);
             }
-
             //sets the current route of this chapter to the 1st (default) route
             currentRoute = currentChapter[defaultRoute];
         }
@@ -661,48 +592,91 @@ public class DialogueSystem : MonoBehaviour
         //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         private string endName = ".END";
         private string defaultRoute = defaultRouteName;
-        DialogueWrapper wrapper;
+        private DialogueWrapper wrapper;
+        
         //needed because dictionaries don't preserve order
-        List<string> routeOrder;
+        private List<string> routeOrder;
 
         //for dynamically accessing the text file
         private string pointerRoute = null;
         private int pointer=0;
-        string[] lines;
-        string filepath;
+        private string[] lines;
+        private string filepath;
 
         //filepaths
-        string jsonConvertFilePath = "Assets/EZDialogue/TEXTtoJSON/";
-        string textConvertFilePath = "Assets/EZDialogue/JSONtoText/";
-        string filename; //includes extension type
+        private string jsonConvertFilePath = "Assets/EZDialogue/TEXTtoJSON/";
+        private string textConvertFilePath = "Assets/EZDialogue/JSONtoText/";
+        private string filename; //includes extension type
+        private string extension;
+
 
         public Textbook(){
-            currentChapter = new Dictionary<string, List<DialogueEntry>>();
-            routeOrder = new List<string>();
+            RefreshVariables();
         }
 
         //reads in a chapter file 
         public void LoadChapter(string file){
-            string filetype = file.Substring(file.IndexOf("."));
+            // ======= refresh variables =======
+            RefreshVariables();
 
-            if (filetype == ".json") {
-                string fileNameWithoutExtension = file.Substring(0, file.IndexOf("."));
-                filename = file;
+            extension = file.Substring(file.IndexOf("."));
+
+            if (extension == ".json") {
+                filename = file.Substring(0, file.IndexOf("."));
                 filepath = Path.Combine("Assets/EZDialogue/JSONs/",file);
+                LoadAsJson(file);
 
-                base.LoadChapter(file);
-
-            } else if (filetype == ".txt"){
-                string fileNameWithoutExtension = file.Substring(0, file.IndexOf("."));
-                filename = file;
+            } else if (extension == ".txt"){
+                filename = file.Substring(0, file.IndexOf("."));
                 filepath = Path.Combine("Assets/EZDialogue/TEXTs/",file);
 
                 pointerRoute = null;
                 pointer = 0;
                 RefreshLines();
+                ParseAllEntries();
             } else {
                 throw new Exception("File type is neither .txt or .json");
             }
+        }
+
+        //reads in a chapter file and returns a list of name/text/.../command entries
+        private void LoadAsJson(string file){ 
+            try {
+                string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
+                wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
+
+                LoadIntoDictionary();
+            }
+
+            catch {
+                throw new Exception("File not found");
+            }
+        }
+
+        private void LoadIntoDictionary(){
+            //create dictionary based on the different routes of each entry
+            foreach (DialogueEntry entry in wrapper.dialogueEntries)
+            {
+                Debug.Log(entry.dialogue); //TODO
+                //if route is not in the dictionary yet, add it
+                if (!currentChapter.ContainsKey(entry.route)){
+                currentChapter[entry.route] = new List<DialogueEntry>();
+                }
+                //add the entry to that route
+                currentChapter[entry.route].Add(entry);
+            }
+            //sets the current route of this chapter to the 1st (default) route
+            currentRoute = currentChapter[defaultRoute];
+        }
+
+
+        private void RefreshVariables(){
+            bookmark = 0;
+            pointer = 0;
+            pointerRoute = null;
+            currentChapter = new Dictionary<string, List<DialogueEntry>>();
+            routeOrder = new List<string>();
+            wrapper = new DialogueWrapper();
         }
 
         public void RefreshLines(){
@@ -742,7 +716,7 @@ public class DialogueSystem : MonoBehaviour
             //     Debug.Log("========");
             // }
 
-            LoadIntoDictionary(wrapper);
+            LoadIntoDictionary();
         }
 
         //gets the next entry block from the text file
@@ -795,7 +769,7 @@ public class DialogueSystem : MonoBehaviour
                         if (!routeOrder.Contains(entry.route)){
                             routeOrder.Add(entry.route);
                         } else {
-                            throw new Exception(filename+": Duplicate route. Routes must be unique.");
+                            throw new Exception(filename+extension+": Duplicate route. Routes must be unique.");
                         }
 
                     } else if (typeOfLine==".say"){
@@ -825,7 +799,7 @@ public class DialogueSystem : MonoBehaviour
             return null;
         }
 
-        public bool IsCommentLine(string line){
+        private bool IsCommentLine(string line){
             if (line.Length>=1){
                 if (line[0]=='#'){
                     return true;
@@ -835,7 +809,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //verifies that if there's a keyword, then it must be formatted correctly (space after it)
-        public string HasKeyWord(string line){
+        private string HasKeyWord(string line){
             string[] list = new string[4];
             list[0]=".route";
             list[1]=".say";
@@ -863,14 +837,14 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //parse as dialogue
-        public string[] ParseDialogue(string line, string[] nameAndDialogue){
+        private string[] ParseDialogue(string line, string[] nameAndDialogue){
             string[] list = new string[2];
             string type = ".say";
             int loc = line.IndexOf(type);
             if (loc!=-1){
                 if (nameAndDialogue!=null){
                     // Debug.Log("Multiple .say lines in same block on line "+pointer);
-                    throw new Exception(filename+": Multiple .say lines in same block on line "+pointer);
+                    throw new Exception(filename+extension+": Multiple .say lines in same block on line "+pointer);
                     //throw exception?
                 }
 
@@ -881,40 +855,40 @@ public class DialogueSystem : MonoBehaviour
             return nameAndDialogue;
         }
 
-        public string ParseVoice(string line, string oldVoice){
+        private string ParseVoice(string line, string oldVoice){
             string voice = oldVoice;
             string type = ".voice";
             int loc = line.IndexOf(type);
             if (loc!=-1){
                 if (oldVoice!=null){
                     // Debug.Log("Multiple .voice lines in same block on line "+pointer);
-                    throw new Exception(filename+": Multiple .voice lines in same block on line "+pointer);
+                    throw new Exception(filename+extension+": Multiple .voice lines in same block on line "+pointer);
                 }
                 voice = line.Substring(loc + type.Length).Trim();
             }
             return voice;
         }
-        public string ParseCommandsBasic(string line, string oldCommands){
+        private string ParseCommandsBasic(string line, string oldCommands){
             string commands = oldCommands;
             string type = ".func";
             int loc = line.IndexOf(type);
             if (loc!=-1){
                 if (oldCommands!=null){
                     // Debug.Log("Multiple .func lines in same block on line "+pointer);
-                    throw new Exception(filename+": Multiple .func lines in same block on line "+pointer);
+                    throw new Exception(filename+extension+": Multiple .func lines in same block on line "+pointer);
                 }
 
                 commands = line.Substring(loc + type.Length).Trim();
             }
             return commands;
         }
-        public string ParseRoute(string line, string oldRoute){
+        private string ParseRoute(string line, string oldRoute){
             string route = null;
             string type = ".route";
             int loc = line.IndexOf(type);
             if (loc!=-1){
                 if (oldRoute!=null){
-                    Debug.Log(filename+": Multiple .route lines in same block on line "+pointer);
+                    Debug.Log(filename+extension+": Multiple .route lines in same block on line "+pointer);
                 }
                 route = line.Substring(loc + type.Length).Trim();
             } 
@@ -922,9 +896,17 @@ public class DialogueSystem : MonoBehaviour
             return route;
         }
 
+        public void Export(){
+            if (extension==".json"){
+                ExportToText();
+            } else {
+                ExportToJson();
+            }
+        }
+
         //export to json file
-        public void ExportToJson(){
-            string newFile = filename.Substring(0, filename.IndexOf("."))+".json";
+        private void ExportToJson(){
+            string newFile = filename+".json";
 
             try {
                 //create directory if doesn't exist
@@ -940,40 +922,44 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //exports to text
-        public void ExportToText(){
-            string newFile = filename.Substring(0, filename.IndexOf("."))+".txt";
-            try {
+        private void ExportToText(){
+            string newFile = filename+".txt";
+            
                 //create directory if doesn't exist
                 if (!Directory.Exists(textConvertFilePath)){
                     Directory.CreateDirectory(textConvertFilePath);
                 }
-                
+
+                List<string> list = new List<string>();
+               
                 string line = "\n";
-                foreach(string route in routeOrder){
-                    line += $".route {route}\n";
-                    line = "";
-
-                    foreach (DialogueEntry entry in wrapper.dialogueEntries){
-                        if (entry.dialogue != ""){
-                            line += $"{entry.name} .say {entry.dialogue}\n"; 
-                        }
-                        if (entry.commands != ""){
-                            line += $".func {entry.commands}\n"; 
-                        }
-                        if (entry.voice != ""){
-                            line += $".voice {entry.voice}\n"; 
-                        }
-                        line += "\n";
+                foreach (DialogueEntry entry in wrapper.dialogueEntries){
+                    if (!list.Contains(entry.route)){
+                        line += $".route {entry.route}\n";
+                        list.Add(entry.route);
                     }
-                }
 
+                    if (entry.dialogue != ""){
+                        string n = entry.name;
+                        if (n!=""){
+                            n+=" ";
+                        }
+                        line += $"\t{n}.say {entry.dialogue.Replace("\n", "\\n")}\n"; 
+                    }
+                    if (entry.commands != ""){
+                        line += $"\t.func {entry.commands}\n"; 
+                    }
+                    if (entry.voice != ""){
+                        line += $"\t.voice {entry.voice}\n"; 
+                    }
+                    line += "\n";
+                    }
+                
+                // Debug.Log(line);
                 File.WriteAllText(textConvertFilePath + newFile, line);
 
                 Debug.Log("JSON exported to text and saved to file: " + textConvertFilePath + newFile);
-            
-            } catch (System.Exception ex){
-                Debug.LogError("Error exporting JSON: " + ex.Message + "\nPlease have "+textConvertFilePath);
-            }
+          
         }
 
     }

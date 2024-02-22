@@ -4,22 +4,22 @@
             "route": "1",
             "name": "",
             "dialogue": "Two hours had passed and the clock struck nine.",
-            "commands": "",
+            "commands": "spawn(Aoko, x, y, t1) move(Aoko, x, y, t1, t2)",
             "voice": ""
         },
         {
             "route": "1",
             "name": "",
             "dialogue": "\n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.",
-            "commands": "",
+            "commands": "move(Aoko, x, y, t1, t2)",
             "voice": ""
         },
         {
             "route": "1",
             "name": "Aoko",
             "dialogue": "\n\n\"To be honest, I didn't really want to leave it to Tobimaru like this.\"",
-            "commands": "",
-            "voice": ""
+            "commands": "swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1, fade=true)",
+            "voice": "Aoko/chapter1/part1.mp3"
         },
         {
             "route": "1",

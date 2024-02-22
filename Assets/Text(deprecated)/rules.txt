@@ -10,3 +10,10 @@ TODO
 5. buggy when adding text (spam multiple letters at same time) ingame through the editor 
 6. for moving a sprite. initially, store current x and y and calculate end point. 
 7. combine .func .func when in same block?
+
+#spawn(nameOfObject, img path, x, y, startTime, fade=false)
+#despawn(nameOfObject, t1, fade=false)
+#moveby(nameOfObject, x, y, startTime, duration)
+#moveto(nameOfObject, x, y, t1, t2)
+#swap(nameOfObject, img path)
+#selection(["Take an apple", "Take an orange", "Do not eat"], ["Apple", "Orange", "null"], ["routeApple", "routeOrange", "default"])
