@@ -94,7 +94,8 @@ public class DialogueSystem : MonoBehaviour
 
         //DEV TOOLS
         book = new Textbook();
-        book.LoadChapter("chapter1.json");
+        book.allowDynamicReading = true;
+        book.LoadChapter("chapter1.txt");
         book.Export();
     }
 
@@ -486,6 +487,7 @@ public class DialogueSystem : MonoBehaviour
         protected int bookmark=0;//saves the index for the current dialogueEntry in currentRoute
         protected string endName = ".END"; //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         protected string defaultRoute = defaultRouteName;
+        public bool allowDynamicReading = false;
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
@@ -591,7 +593,6 @@ public class DialogueSystem : MonoBehaviour
         private string filename; //includes extension type
         private string extension;
 
-
         public Textbook(){
             RefreshVariables();
         }
@@ -615,7 +616,9 @@ public class DialogueSystem : MonoBehaviour
                 pointerRoute = null;
                 pointer = 0;
                 // RefreshLines();
-                ParseAllEntries();
+                if (allowDynamicReading==false){
+                    ParseAllEntries();
+                }
             } else {
                 throw new Exception("File type is neither .txt or .json");
             }
@@ -667,8 +670,6 @@ public class DialogueSystem : MonoBehaviour
         //parses all entries and loads into the dictionary
         public void ParseAllEntries(){
             List<DialogueEntry> list = new List<DialogueEntry>();
-            string currentRoute = "1";
-
             DialogueEntry entry = new DialogueEntry();
 
             int insurance = 100000;
@@ -881,7 +882,11 @@ public class DialogueSystem : MonoBehaviour
             if (extension==".json"){
                 ExportToText();
             } else {
-                ExportToJson();
+                if (allowDynamicReading==false){
+                    ExportToJson();
+                } else {
+                    Debug.Log("CANNOT EXPORT WHEN IN DYNAMIC READING MODE");
+                }
             }
         }
 
@@ -941,6 +946,34 @@ public class DialogueSystem : MonoBehaviour
 
                 Debug.Log("JSON exported to text and saved to file: " + textConvertFilePath + newFile);
           
+        }
+
+        public override DialogueEntry GetCurrentEntryAndIncrement(){
+            if (extension == ".txt" && allowDynamicReading==true){
+                // RefreshLines();
+                DialogueEntry entry;
+                if (IsEnd()){
+                    entry = new DialogueEntry();
+                    entry.dialogue = "REACHED END OF ROUTE";
+                    return entry;
+                }
+                entry = ParseNextEntry();
+                return entry;
+
+            } else {
+                return base.GetCurrentEntryAndIncrement();
+            }
+
+        }
+
+        public override bool IsEnd(){
+            RefreshLines();
+            if (extension == ".txt" && allowDynamicReading==true){
+                return pointer >= lines.Length;
+            } else {
+                return base.IsEnd();
+            }
+
         }
 
     }
