@@ -887,9 +887,9 @@ public class DialogueSystem : MonoBehaviour
             string type = ".route";
             int loc = line.IndexOf(type);
             if (loc!=-1){
-                if (oldRoute!=null){
-                    Debug.Log(filename+extension+": Multiple .route lines in same block on line "+pointer);
-                }
+                // if (oldRoute!=null){
+                //     Debug.Log(filename+extension+": Multiple .route lines in same block on line "+pointer);
+                // }
                 route = line.Substring(loc + type.Length).Trim();
             } 
 
