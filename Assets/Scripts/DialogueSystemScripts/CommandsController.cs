@@ -6,6 +6,11 @@ public class CommandsController : MonoBehaviour
 {
 
     string baseImgDirectory = "Assets/Images/";
+
+    //data objects to hold important information/items
+    public Dictionary<string, int> routeInformation;
+    public Dictionary<string, int> inventory;
+    
     // Start is called before the first frame update
     void Start()
     {
