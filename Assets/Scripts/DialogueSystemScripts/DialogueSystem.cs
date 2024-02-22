@@ -99,6 +99,7 @@ public class DialogueSystem : MonoBehaviour
         book.Export();
     }
 
+    //sets up all the necessary directories
     private void SetupFolders(){
         try {
             //create directory if doesn't exist
@@ -176,7 +177,7 @@ public class DialogueSystem : MonoBehaviour
             else { //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
-                    DialogueEntry currentEntry = book.GetCurrentEntryAndIncrement();
+                    DialogueEntry currentEntry = book.GetNewEntryAndIncrement();
                     string text = currentEntry.dialogue;
                     text = postprocessText(text);
 
@@ -487,6 +488,7 @@ public class DialogueSystem : MonoBehaviour
         protected int bookmark=0;//saves the index for the current dialogueEntry in currentRoute
         protected string endName = ".END"; //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         protected string defaultRoute = defaultRouteName;
+        protected DialogueEntry currentEntry = null;
         public bool allowDynamicReading = false;
 
         public Book(){
@@ -534,23 +536,25 @@ public class DialogueSystem : MonoBehaviour
             return currentRoute;
         }
 
-        public virtual DialogueEntry GetCurrentEntry(){
+        public virtual DialogueEntry GetNewEntry(){
             return currentRoute[bookmark];
         }
 
-        public virtual DialogueEntry GetCurrentEntryAndIncrement(){
-            DialogueEntry entry;
+        public virtual DialogueEntry GetCurrentEntry(){
+            return currentEntry;
+        }
+
+        public virtual DialogueEntry GetNewEntryAndIncrement(){
             if (IsEnd()){
-                entry = new DialogueEntry();
+                DialogueEntry entry = new DialogueEntry();
                 entry.dialogue = "REACHED END OF ROUTE";
                 // Debug.Log("Reached the End of Route");
                 return entry;
             }
-
-            entry = currentRoute[bookmark];
+            currentEntry = currentRoute[bookmark];
             bookmark++;
 
-            return entry;
+            return currentEntry;
         }
 
         public virtual DialogueEntry GetEntry(int i){
@@ -948,22 +952,20 @@ public class DialogueSystem : MonoBehaviour
           
         }
 
-        public override DialogueEntry GetCurrentEntryAndIncrement(){
+        //gets the next entry and increments as needed
+        public override DialogueEntry GetNewEntryAndIncrement(){
             if (extension == ".txt" && allowDynamicReading==true){
-                // RefreshLines();
-                DialogueEntry entry;
                 if (IsEnd()){
-                    entry = new DialogueEntry();
+                    DialogueEntry entry = new DialogueEntry();
                     entry.dialogue = "REACHED END OF ROUTE";
                     return entry;
                 }
-                entry = ParseNextEntry();
-                return entry;
+                currentEntry = ParseNextEntry();
+                return currentEntry;
 
             } else {
-                return base.GetCurrentEntryAndIncrement();
+                return base.GetNewEntryAndIncrement();
             }
-
         }
 
         public override bool IsEnd(){
