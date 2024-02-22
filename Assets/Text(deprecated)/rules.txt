@@ -9,3 +9,4 @@ TODO
 4. DONE change .json logic so it automatically adds the dialogueEntries: { }
 5. buggy when adding text (spam multiple letters at same time) ingame through the editor 
 6. for moving a sprite. initially, store current x and y and calculate end point. 
+7. combine .func .func when in same block?

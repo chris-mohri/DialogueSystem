@@ -68,12 +68,6 @@ public class DialogueSystem : MonoBehaviour
     private Book book;
     // private string endName = ".END";
 
-    //================== CHAPTERS ===========================================================
-    //ADD ALL CHAPTERS HERE (in the editor, place the .jsons here: chapter1.json should be placed here)
-    public TextAsset chapter1;
-
-    //=======================================================================================
-
     void Awake(){
         //creates the player controls
         controls = new PlayerControls();
@@ -92,19 +86,16 @@ public class DialogueSystem : MonoBehaviour
 
         //creates the book
         book = new Book();
-        book.LoadChapter(chapter1);
+        book.LoadChapter("chapter1.json");
 
         //make sure the counters are counted correctly at the start
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
         //DEV TOOLS
-        //batchConvertTSVtoJSON();
         Textbook tbook = new Textbook();
-        tbook.LoadChapter("Assets/EZDialogue/TEXTs/chapter1.txt");
-        tbook.ParseAllEntries();
-        tbook.ExportToJson();
-        
+        tbook.LoadChapter("chapter1.json");
+        tbook.ExportToText();
     }
 
     private void SetupFolders(){
@@ -137,14 +128,6 @@ public class DialogueSystem : MonoBehaviour
         } catch (System.Exception ex){
             Debug.LogError("Error : " + ex.Message);
         }
-    }
-
-    private void batchConvertTSVtoJSON(){
-        convertTSVtoJSON("chapter1.tsv", "chapter1.json");
-    }
-
-    private void batchConvertJSONtoTSV(){
-        ConvertJSONToTSV("chapter1.json", "chapter1.tsv");
     }
 
     private void OnEnable(){
@@ -238,7 +221,6 @@ public class DialogueSystem : MonoBehaviour
 
                 } else {
                     Debug.Log("Chapter Ended");
-                    Debug.Log("Is still displaying? "+stillDisplaying);
                 }
 
             }
@@ -456,6 +438,8 @@ public class DialogueSystem : MonoBehaviour
         currentCharIndex-=tag.Length;        
     }
 
+    /*
+
     public void convertTSVtoJSON(string tsvName, string jsonName){
         Debug.Log("Attempting to convert "+tsvName);
 
@@ -523,7 +507,7 @@ public class DialogueSystem : MonoBehaviour
         Debug.Log(jsonName + " successfully converted to "+tsvName);
     }
 
-    
+    */
 
 
 // ============== INNER CLASSES =========================================
@@ -579,20 +563,25 @@ public class DialogueSystem : MonoBehaviour
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
         }
-
         //reads in a chapter file and returns a list of name/text/.../command entries
-        public void LoadChapter(TextAsset file){
-            string jsonText = file.text;
-            DialogueWrapper wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
+        public void LoadChapter(string file){ 
+            try {
+                string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
+                DialogueWrapper wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
 
-            //for debugging
-            // foreach (DialogueEntry entry in wrapper.dialogueEntries)
-            // {
-            //     Debug.Log(entry.name+": " + entry.dialogue);
-            //     Debug.Log(entry.voice+": " + entry.commands);
-            // }
+                // for debugging
+                // foreach (DialogueEntry entry in wrapper.dialogueEntries)
+                // {
+                //     Debug.Log(entry.name+": " + entry.dialogue);
+                //     Debug.Log(entry.voice+": " + entry.commands);
+                // }
 
-            LoadIntoDictionary(wrapper);
+                LoadIntoDictionary(wrapper);
+            }
+
+            catch {
+                throw new Exception("File not found");
+            }
         }
 
         public void LoadIntoDictionary(DialogueWrapper wrapper){
@@ -630,7 +619,7 @@ public class DialogueSystem : MonoBehaviour
             if (IsEnd()){
                 entry = new DialogueEntry();
                 entry.dialogue = "REACHED END OF ROUTE";
-                Debug.Log("Reached the End");
+                // Debug.Log("Reached the End of Route");
                 return entry;
             }
 
@@ -653,7 +642,6 @@ public class DialogueSystem : MonoBehaviour
 
         public bool IsEnd(){
             if (bookmark >= currentRoute.Count){
-                Debug.Log("reached the end of the route");
                 return true;
             }
             return false;
@@ -674,6 +662,8 @@ public class DialogueSystem : MonoBehaviour
         private string endName = ".END";
         private string defaultRoute = defaultRouteName;
         DialogueWrapper wrapper;
+        //needed because dictionaries don't preserve order
+        List<string> routeOrder;
 
         //for dynamically accessing the text file
         private string pointerRoute = null;
@@ -683,22 +673,36 @@ public class DialogueSystem : MonoBehaviour
 
         //filepaths
         string jsonConvertFilePath = "Assets/EZDialogue/TEXTtoJSON/";
-        string filename;
+        string textConvertFilePath = "Assets/EZDialogue/JSONtoText/";
+        string filename; //includes extension type
 
         public Textbook(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
+            routeOrder = new List<string>();
         }
 
-        //reads in a chapter file and returns a list of name/text/.../command entries
-        public void LoadChapter(string path){
-            string[] extractName = path.Split("/");
-            string name = extractName[extractName.Length-1];
-            filename = name.Substring(0, name.IndexOf("."));
-            filepath = path;
+        //reads in a chapter file 
+        public void LoadChapter(string file){
+            string filetype = file.Substring(file.IndexOf("."));
 
-            pointerRoute = null;
-            pointer = 0;
-            RefreshLines();
+            if (filetype == ".json") {
+                string fileNameWithoutExtension = file.Substring(0, file.IndexOf("."));
+                filename = file;
+                filepath = Path.Combine("Assets/EZDialogue/JSONs/",file);
+
+                base.LoadChapter(file);
+
+            } else if (filetype == ".txt"){
+                string fileNameWithoutExtension = file.Substring(0, file.IndexOf("."));
+                filename = file;
+                filepath = Path.Combine("Assets/EZDialogue/TEXTs/",file);
+
+                pointerRoute = null;
+                pointer = 0;
+                RefreshLines();
+            } else {
+                throw new Exception("File type is neither .txt or .json");
+            }
         }
 
         public void RefreshLines(){
@@ -721,7 +725,7 @@ public class DialogueSystem : MonoBehaviour
 
                 insurance--;
                 if (insurance==0){
-                    Debug.Log("hit insurance");
+                    Debug.Log("Infinite loop warning in ParseAllEntries()");
                     break;
                 }
             }
@@ -762,13 +766,14 @@ public class DialogueSystem : MonoBehaviour
                 pointer++; //move pointer
                 insurance--; //make sure no infinite loop happens
                 if (insurance==0){
-                    Debug.Log("hit insurance 2");
+                    Debug.Log("Infinite loop warning in ParseNextEntry()\nMax number of lines in a file cannot exceed 1,000,000");
                     break;
                 }
 
                 //continue if haven't found block yet, return if found end of block
                 if (line.Length==0){
                     if (blockFound){
+                        //each entry block must be attached to a route
                         if (entry.route==null){
                             throw new Exception("No route attached to this entry block"); 
                         }
@@ -785,6 +790,14 @@ public class DialogueSystem : MonoBehaviour
                     if (typeOfLine==".route"){
                         pointerRoute = ParseRoute(line, pointerRoute);
                         entry.route = pointerRoute;
+
+                        //make sure there are not duplicate routes
+                        if (!routeOrder.Contains(entry.route)){
+                            routeOrder.Add(entry.route);
+                        } else {
+                            throw new Exception(filename+": Duplicate route. Routes must be unique.");
+                        }
+
                     } else if (typeOfLine==".say"){
                         nameAndDialogue = ParseDialogue(line, nameAndDialogue);
                         entry.name = nameAndDialogue[0];
@@ -911,18 +924,58 @@ public class DialogueSystem : MonoBehaviour
 
         //export to json file
         public void ExportToJson(){
+            string newFile = filename.Substring(0, filename.IndexOf("."))+".json";
+
             try {
                 //create directory if doesn't exist
                 if (!Directory.Exists(jsonConvertFilePath)){
                     Directory.CreateDirectory(jsonConvertFilePath);
                 }
                 string jsonData = JsonUtility.ToJson(wrapper, true);
-                File.WriteAllText(jsonConvertFilePath + filename+".json", jsonData);
-                Debug.Log("Text exported to JSON and saved to file: " + jsonConvertFilePath + filename+".json");
+                File.WriteAllText(jsonConvertFilePath + newFile, jsonData);
+                Debug.Log("Text exported to JSON and saved to file: " + jsonConvertFilePath + newFile);
             } catch (System.Exception ex){
                 Debug.LogError("Error exporting JSON: " + ex.Message + "\nPlease have "+jsonConvertFilePath);
             }
         }
+
+        //exports to text
+        public void ExportToText(){
+            string newFile = filename.Substring(0, filename.IndexOf("."))+".txt";
+            try {
+                //create directory if doesn't exist
+                if (!Directory.Exists(textConvertFilePath)){
+                    Directory.CreateDirectory(textConvertFilePath);
+                }
+                
+                string line = "\n";
+                foreach(string route in routeOrder){
+                    line += $".route {route}\n";
+                    line = "";
+
+                    foreach (DialogueEntry entry in wrapper.dialogueEntries){
+                        if (entry.dialogue != ""){
+                            line += $"{entry.name} .say {entry.dialogue}\n"; 
+                        }
+                        if (entry.commands != ""){
+                            line += $".func {entry.commands}\n"; 
+                        }
+                        if (entry.voice != ""){
+                            line += $".voice {entry.voice}\n"; 
+                        }
+                        line += "\n";
+                    }
+                }
+
+                File.WriteAllText(textConvertFilePath + newFile, line);
+
+                Debug.Log("JSON exported to text and saved to file: " + textConvertFilePath + newFile);
+            
+            } catch (System.Exception ex){
+                Debug.LogError("Error exporting JSON: " + ex.Message + "\nPlease have "+textConvertFilePath);
+            }
+        }
+
     }
 
     /*
