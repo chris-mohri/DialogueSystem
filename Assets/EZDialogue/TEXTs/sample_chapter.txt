@@ -18,7 +18,7 @@
 
     .END
 
-
+#give("item")
 #spawn(nameOfObject, img path, x, y, startTime, fade=false)
 #despawn(nameOfObject, t1, fade=false)
 #moveby(nameOfObject, x, y, startTime, duration)

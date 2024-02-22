@@ -18,6 +18,13 @@ public class CommandsController : MonoBehaviour
         
     }
 
+    //choices = what is displayed on screen
+    //result = items to be added to inventory
+    //jump = route to jump to 
+    public void choose(List<string> choices, List<string> result, List<string> jump){
+
+    }
+
     // INSERT CUSTOM SCRIPTS HERE 
     // MAKE THEM PUBLIC!!
     // e.g. public void customScriptName(input){ ... } 

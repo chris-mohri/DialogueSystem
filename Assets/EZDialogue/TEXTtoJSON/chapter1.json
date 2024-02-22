@@ -118,6 +118,20 @@
             "dialogue": "Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.",
             "commands": "",
             "voice": ""
+        },
+        {
+            "route": "1",
+            "name": "",
+            "dialogue": "",
+            "commands": "choose([\"Aoko, you speak too much\", \"Stay silent\"], [\"1a\", \"1b\"]) jump(\"1\", [\"1a\"]) jump(\"1b\", [\"1b\"])",
+            "voice": ""
+        },
+        {
+            "route": "1b",
+            "name": "Aoko",
+            "dialogue": "\"Staying silent, Alice?\"",
+            "commands": "",
+            "voice": ""
         }
     ]
 }

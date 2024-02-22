@@ -102,7 +102,7 @@ public class DialogueSystem : MonoBehaviour
     //sets up all the necessary directories
     private void SetupFolders(){
         try {
-            //create directory if doesn't exist
+            //create directory if doesn't exist 
             if (!Directory.Exists(dialogueFolderPath)){
                 Directory.CreateDirectory(dialogueFolderPath);
             }
@@ -137,6 +137,14 @@ public class DialogueSystem : MonoBehaviour
     }
     private void OnDisable(){
         controls.Disable();
+    }
+
+    public void DisableControls(){
+        controls.Disable();
+    }
+
+    public void EnableControls(){
+        controls.Enable();
     }
 
     // Update is called once per frame
@@ -177,7 +185,7 @@ public class DialogueSystem : MonoBehaviour
             else { //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
-                    DialogueEntry currentEntry = book.GetNewEntryAndIncrement();
+                    DialogueEntry currentEntry = book.GetNextEntryAndIncrement();
                     string text = currentEntry.dialogue;
                     text = postprocessText(text);
 
@@ -196,27 +204,30 @@ public class DialogueSystem : MonoBehaviour
                         AddTag(0, dimTag);
                     }
 
-                    // remove the old undim tag and place the new undim tag =====
-                    if (undimTagIndex!=-1){
-                        RemoveTag(undimTagIndex, undimTag);
-                    }
-                    undimTagIndex=currentCharIndex;
-                    AddTag(currentCharIndex, undimTag);
-                    // ===========================================================
-
-                    // check if lines have exceeded maxLines     =================
-                    if (textObj.textInfo.lineCount>=maxLines){
-                        //clear current text and set as new text
-                        textObj.text = text;
-                        textObj.ForceMeshUpdate();
-                        if (textObj.textInfo.lineCount>=maxLines){
-                            textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
-                            textObj.ForceMeshUpdate();
+                    if (currentEntry.dialogue != ""){
+                        // remove the old undim tag and place the new undim tag =====
+                        if (undimTagIndex!=-1){
+                            RemoveTag(undimTagIndex, undimTag);
                         }
-                        textObj.maxVisibleCharacters = 0;
-                        currentCharIndex = 0;
-                        undimTagIndex=-1;
+                        undimTagIndex=currentCharIndex;
+                        AddTag(currentCharIndex, undimTag);
+                        // ===========================================================
+
+                        // check if lines have exceeded maxLines     =================
+                        if (textObj.textInfo.lineCount>=maxLines){
+                            //clear current text and set as new text
+                            textObj.text = text;
+                            textObj.ForceMeshUpdate();
+                            if (textObj.textInfo.lineCount>=maxLines){
+                                textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
+                                textObj.ForceMeshUpdate();
+                            }
+                            textObj.maxVisibleCharacters = 0;
+                            currentCharIndex = 0;
+                            undimTagIndex=-1;
+                        }
                     }
+                    
 
                     // =========================================================== 
                     stillDisplaying=true;
@@ -536,7 +547,7 @@ public class DialogueSystem : MonoBehaviour
             return currentRoute;
         }
 
-        public virtual DialogueEntry GetNewEntry(){
+        public virtual DialogueEntry GetNextEntry(){
             return currentRoute[bookmark];
         }
 
@@ -544,7 +555,7 @@ public class DialogueSystem : MonoBehaviour
             return currentEntry;
         }
 
-        public virtual DialogueEntry GetNewEntryAndIncrement(){
+        public virtual DialogueEntry GetNextEntryAndIncrement(){
             if (IsEnd()){
                 DialogueEntry entry = new DialogueEntry();
                 entry.dialogue = "REACHED END OF ROUTE";
@@ -636,7 +647,6 @@ public class DialogueSystem : MonoBehaviour
 
                 LoadIntoDictionary();
             }
-
             catch {
                 throw new Exception("File not found");
             }
@@ -724,6 +734,7 @@ public class DialogueSystem : MonoBehaviour
             while(pointer < lines.Length){
                 line = lines[pointer].Trim(); //trim the line
                 pointer++; //move pointer
+                
                 insurance--; //make sure no infinite loop happens
                 if (insurance==0){
                     Debug.Log("Infinite loop warning in ParseNextEntry()\nMax number of lines in a file cannot exceed 1,000,000");
@@ -742,11 +753,12 @@ public class DialogueSystem : MonoBehaviour
                         continue;
                     }
                 }
+
                 if (IsCommentLine(line)) continue;
 
                 //handle the type of line
                 string typeOfLine = HasKeyWord(line);
-                if (HasKeyWord(line)!=null){
+                if (typeOfLine!=null){
                     if (typeOfLine==".route"){
                         pointerRoute = ParseRoute(line, pointerRoute);
                         entry.route = pointerRoute;
@@ -861,10 +873,12 @@ public class DialogueSystem : MonoBehaviour
             if (loc!=-1){
                 if (oldCommands!=null){
                     // Debug.Log("Multiple .func lines in same block on line "+pointer);
-                    throw new Exception(filename+extension+": Multiple .func lines in same block on line "+pointer);
+                    // throw new Exception(filename+extension+": Multiple .func lines in same block on line "+pointer);
+                    commands += " "+line.Substring(loc + type.Length).Trim();
+                } else {
+                    commands = line.Substring(loc + type.Length).Trim();
                 }
-
-                commands = line.Substring(loc + type.Length).Trim();
+                
             }
             return commands;
         }
@@ -953,7 +967,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //gets the next entry and increments as needed
-        public override DialogueEntry GetNewEntryAndIncrement(){
+        public override DialogueEntry GetNextEntryAndIncrement(){
             if (extension == ".txt" && allowDynamicReading==true){
                 if (IsEnd()){
                     DialogueEntry entry = new DialogueEntry();
@@ -964,14 +978,25 @@ public class DialogueSystem : MonoBehaviour
                 return currentEntry;
 
             } else {
-                return base.GetNewEntryAndIncrement();
+                return base.GetNextEntryAndIncrement();
             }
         }
 
         public override bool IsEnd(){
             RefreshLines();
             if (extension == ".txt" && allowDynamicReading==true){
-                return pointer >= lines.Length;
+                int tempPointer = pointer;
+                string line;
+                while (tempPointer < lines.Length){
+                    line = lines[tempPointer];
+                    tempPointer++;
+                    string typeOfLine = HasKeyWord(line);
+                    if (typeOfLine!=null){
+                        return false;
+                    }
+                }
+
+                return true;
             } else {
                 return base.IsEnd();
             }
