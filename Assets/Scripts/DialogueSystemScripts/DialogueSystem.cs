@@ -85,17 +85,17 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //creates the book
-        book = new Book();
-        book.LoadChapter("chapter1.json");
+        // book = new Book();
+        // book.LoadChapter("chapter1.json");
 
         //make sure the counters are counted correctly at the start
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
         //DEV TOOLS
-        Textbook tbook = new Textbook();
-        tbook.LoadChapter("chapter1.txt");
-        tbook.Export();
+        book = new Textbook();
+        book.LoadChapter("chapter1.json");
+        book.Export();
     }
 
     private void SetupFolders(){
@@ -480,40 +480,31 @@ public class DialogueSystem : MonoBehaviour
     [System.Serializable]
     public class Book{
         //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
-        private Dictionary<string, List<DialogueEntry>> currentChapter;
-        DialogueWrapper wrapper;
-        //the list of entries of the current route
-        private List<DialogueEntry> currentRoute;
-        //saves the index for the current dialogueEntry in currentRoute
-        private int bookmark=0;
-        //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
-        private string endName = ".END";
-        private string defaultRoute = defaultRouteName;
+        protected Dictionary<string, List<DialogueEntry>> currentChapter;
+        protected DialogueWrapper wrapper;
+        protected List<DialogueEntry> currentRoute; //the list of entries of the current route
+        protected int bookmark=0;//saves the index for the current dialogueEntry in currentRoute
+        protected string endName = ".END"; //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
+        protected string defaultRoute = defaultRouteName;
 
         public Book(){
             currentChapter = new Dictionary<string, List<DialogueEntry>>();
         }
+
         //reads in a chapter file and returns a list of name/text/.../command entries
-        public void LoadChapter(string file){ 
-            try {
-                string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
-                wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
-
-                // foreach(DialogueEntry e in wrapper.dialogueEntries){
-                //     Debug.Log("Route: "+e.route);
-                //     Debug.Log("Name: "+e.name);
-                //     Debug.Log("Dialog: "+e.dialogue);
-                //     Debug.Log("Commands: "+e.commands);
-                //     Debug.Log("Voice: "+e.voice);
-                //     Debug.Log("========");
-                // }
-
-                LoadIntoDictionary();
-            }
-
-            catch {
-                throw new Exception("File not found");
-            }
+        public virtual void LoadChapter(string file){ 
+            string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
+            wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
+            // foreach(DialogueEntry e in wrapper.dialogueEntries){
+            //     Debug.Log("Route: "+e.route);
+            //     Debug.Log("Name: "+e.name);
+            //     Debug.Log("Dialog: "+e.dialogue);
+            //     Debug.Log("Commands: "+e.commands);
+            //     Debug.Log("Voice: "+e.voice);
+            //     Debug.Log("========");
+            // }
+            LoadIntoDictionary();
+    
         }
 
         private void LoadIntoDictionary(){
@@ -537,15 +528,15 @@ public class DialogueSystem : MonoBehaviour
             bookmark=part;
         }
 
-        public List<DialogueEntry> GetCurrentRoute(){
+        public virtual List<DialogueEntry> GetCurrentRoute(){
             return currentRoute;
         }
 
-        public DialogueEntry GetCurrentEntry(){
+        public virtual DialogueEntry GetCurrentEntry(){
             return currentRoute[bookmark];
         }
 
-        public DialogueEntry GetCurrentEntryAndIncrement(){
+        public virtual DialogueEntry GetCurrentEntryAndIncrement(){
             DialogueEntry entry;
             if (IsEnd()){
                 entry = new DialogueEntry();
@@ -560,40 +551,31 @@ public class DialogueSystem : MonoBehaviour
             return entry;
         }
 
-        public DialogueEntry GetEntry(int i){
+        public virtual DialogueEntry GetEntry(int i){
             return currentRoute[i];
         }
 
-        public void SetBookmark(int num){
+        public virtual void SetBookmark(int num){
             bookmark = num;
         }
-        public int GetBookmark(){
+        public virtual int GetBookmark(){
             return bookmark;
         }
 
-        public bool IsEnd(){
+        public virtual bool IsEnd(){
             if (bookmark >= currentRoute.Count){
                 return true;
             }
             return false;
-            // return GetCurrentEntry().name==endName;
+        }
+
+        public virtual void Export(){
         }
 
     }
 
     [System.Serializable]
-    public class Textbook: Book{
-        //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
-        private Dictionary<string, List<DialogueEntry>> currentChapter;
-        //the list of entries of the current route
-        private List<DialogueEntry> currentRoute;
-        //saves the index for the current dialogueEntry in currentRoute
-        private int bookmark=0;
-        //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
-        private string endName = ".END";
-        private string defaultRoute = defaultRouteName;
-        private DialogueWrapper wrapper;
-        
+    public class Textbook: Book{        
         //needed because dictionaries don't preserve order
         private List<string> routeOrder;
 
@@ -603,7 +585,7 @@ public class DialogueSystem : MonoBehaviour
         private string[] lines;
         private string filepath;
 
-        //filepaths
+        //files
         private string jsonConvertFilePath = "Assets/EZDialogue/TEXTtoJSON/";
         private string textConvertFilePath = "Assets/EZDialogue/JSONtoText/";
         private string filename; //includes extension type
@@ -615,7 +597,7 @@ public class DialogueSystem : MonoBehaviour
         }
 
         //reads in a chapter file 
-        public void LoadChapter(string file){
+        public override void LoadChapter(string file){
             // ======= refresh variables =======
             RefreshVariables();
 
@@ -632,7 +614,7 @@ public class DialogueSystem : MonoBehaviour
 
                 pointerRoute = null;
                 pointer = 0;
-                RefreshLines();
+                // RefreshLines();
                 ParseAllEntries();
             } else {
                 throw new Exception("File type is neither .txt or .json");
@@ -657,7 +639,6 @@ public class DialogueSystem : MonoBehaviour
             //create dictionary based on the different routes of each entry
             foreach (DialogueEntry entry in wrapper.dialogueEntries)
             {
-                Debug.Log(entry.dialogue); //TODO
                 //if route is not in the dictionary yet, add it
                 if (!currentChapter.ContainsKey(entry.route)){
                 currentChapter[entry.route] = new List<DialogueEntry>();
@@ -896,7 +877,7 @@ public class DialogueSystem : MonoBehaviour
             return route;
         }
 
-        public void Export(){
+        public override void Export(){
             if (extension==".json"){
                 ExportToText();
             } else {
