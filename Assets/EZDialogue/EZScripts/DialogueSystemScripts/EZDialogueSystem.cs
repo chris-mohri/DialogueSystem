@@ -6,23 +6,24 @@ using System.IO;
 using TMPro;
 using System.Text.RegularExpressions;
 
-public class DialogueSystem : MonoBehaviour
+public class EZDialogueSystem : MonoBehaviour
 {
 
     //controls for the dialogue system
-    public PlayerControls controls;
+    private PlayerControls controls;
 
-    // ------------------- display variables -------------------
-    //true if the letters of the current entry are still being displayed 1 by 1, false if finished
-    private bool stillDisplaying=false;
+    //saved information script
+    private SavedInformation save;
+    private CommandsController commandController;
 
     //the dialogue object that has the text component
     [SerializeField]
     private GameObject DialogueObject;
-    //the text component to the DialogueObject
-    private TMP_Text textObj;
+    private TMP_Text textObj; //the text component to the DialogueObject
 
     // ------------------- text display/animation variables -------------------
+    //true if the letters of the current entry are still being displayed 1 by 1, false if finished
+    private bool stillDisplaying=false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
     //max number of lines that the text can occupy on screen
@@ -60,7 +61,7 @@ public class DialogueSystem : MonoBehaviour
     private static string defaultRouteName = "1";
 
     //[SerializeField] [Tooltip("(default: Assets/EZDialogue/) File Path for Dialogue files. Make sure to also have subfolders here called 'JSONs' and 'TSVs'")]
-    private string dialogueFolderPath = "Assets/EZDialogue/";
+    private static string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
     [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
     private bool autoCreateDirectories = true;
 
@@ -83,17 +84,16 @@ public class DialogueSystem : MonoBehaviour
             SetupFolders();
         }
 
-        //creates the book
-        // book = new Book();
-        // book.LoadChapter("chapter1.json");
+        //setup connection with other components
+        save = GetComponent<SavedInformation>();
+        commandController = GetComponent<CommandsController>();
 
         //make sure the counters are counted correctly at the start
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
-        //DEV TOOLS
         book = new Textbook();
-        // book.allowDynamicReading = true;
+        book.allowDynamicReading = true;
         book.LoadChapter("chapter1.txt");
         book.Export();
     }
@@ -604,8 +604,8 @@ public class DialogueSystem : MonoBehaviour
         private string filepath;
 
         //files
-        private string jsonConvertFilePath = "Assets/EZDialogue/TEXTtoJSON/";
-        private string textConvertFilePath = "Assets/EZDialogue/JSONtoText/";
+        private string jsonConvertFilePath = dialogueFolderPath + "TEXTtoJSON/";
+        private string textConvertFilePath = dialogueFolderPath + "/JSONtoText/";
         private string filename; //includes extension type
         private string extension;
 
@@ -622,12 +622,12 @@ public class DialogueSystem : MonoBehaviour
 
             if (extension == ".json") {
                 filename = file.Substring(0, file.IndexOf("."));
-                filepath = Path.Combine("Assets/EZDialogue/JSONs/",file);
+                filepath = Path.Combine(dialogueFolderPath+"JSONs/",file);
                 LoadAsJson(file);
 
             } else if (extension == ".txt"){
                 filename = file.Substring(0, file.IndexOf("."));
-                filepath = Path.Combine("Assets/EZDialogue/TEXTs/",file);
+                filepath = Path.Combine(dialogueFolderPath+"TEXTs/",file);
 
                 pointerRoute = null;
                 pointer = 0;
@@ -643,7 +643,7 @@ public class DialogueSystem : MonoBehaviour
         //reads in a chapter file and returns a list of name/text/.../command entries
         private void LoadAsJson(string file){ 
             try {
-                string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
+                string jsonText = File.ReadAllText($"{dialogueFolderPath}JSONs/{file}");;
                 wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
 
                 LoadIntoDictionary();

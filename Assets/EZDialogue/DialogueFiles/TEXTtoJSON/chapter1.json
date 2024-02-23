@@ -140,7 +140,7 @@
             "route": "1",
             "name": "",
             "dialogue": "",
-            "commands": ".choose([\"Aoko, you speak too much\", \"Stay silent\"], [\"1a\", \"1b\"]) .jump(\"label happy\", [\"1a\"]) jump(\"1b\", [\"1b\"]) if routeInfo.has(\"1a\") and inventory.has() then",
+            "commands": "c1_1()",
             "voice": "",
             "label": ""
         },

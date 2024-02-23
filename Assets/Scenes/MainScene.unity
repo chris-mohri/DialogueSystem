@@ -732,6 +732,8 @@ MonoBehaviour:
   displaySpeed: 0.029999999329447746
   fadeSpeed: 0.004000000189989805
   autoCreateDirectories: 1
+  book:
+    allowDynamicReading: 0
 --- !u!114 &1331631635
 MonoBehaviour:
   m_ObjectHideFlags: 0
