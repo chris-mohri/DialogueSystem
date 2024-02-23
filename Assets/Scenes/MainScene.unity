@@ -684,6 +684,7 @@ GameObject:
   - component: {fileID: 1331631633}
   - component: {fileID: 1331631634}
   - component: {fileID: 1331631635}
+  - component: {fileID: 1331631636}
   m_Layer: 5
   m_Name: DialogueSystem
   m_TagString: Untagged
@@ -741,8 +742,21 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1331631632}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 678903c14036175438cb1f981c779078, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseImgDirectory: Assets/Images/
+--- !u!114 &1331631636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1331631632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6cb6c1e2684c734c95ccdb1e81d3216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
