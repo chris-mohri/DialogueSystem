@@ -18,16 +18,19 @@ public class CommandsController : MonoBehaviour
     //the choice menu variables
     private string chosenOption;
 
-    //required variables to handle function execution
-    private string currentFunc = "";
-    State state;
+    //required variables to handle function execution 
+    private List<Job> jobs;
+    private double timer;
 
+    private State state;
+    
     //enum to keep track of current state of the function
     public enum State {
-        Inactive,
-        Displaying,
-        Waiting,
-        Continuing
+        Inactive,   //no functions running
+        Active,     //a function is running (might require multiple cycles)
+        Displaying, //a func should run and execute a display func once
+        Waiting,    //a func is running and is waiting for player input
+        Continuing  //a func is running and should continue for 1 more cycle
     }
 
     void Awake(){
@@ -37,8 +40,6 @@ public class CommandsController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log(baseImgDirectory);
-
         //setup variables
         save = GetComponent<SavedInformation>();
         ds = GetComponent<EZDialogueSystem>();
@@ -48,36 +49,52 @@ public class CommandsController : MonoBehaviour
     }
 
     public void refreshVariables(){
-        currentFunc  = "";
+        jobs = new List<Job>();
+        timer = 0f;
         chosenOption = "";
-        state        = State.Inactive;
     }
 
     // Update is called once per frame
     void Update() {
         //if currently executing a function
-        if (state != State.Inactive){
-            //invoke the function
-            AlisterInvoke(currentFunc);
+        int numActive = 0;
+        foreach (Job job in jobs){
+            if (state != State.Inactive){
+                numActive+=1;
+                state = job.state;
+                //invoke the job
+                AlisterInvoke(job);
+            } // else if (state == State.Continuing || state == State.Inactive) {
+            //     //once completed the function, set back to inactive and reset variables
+            //     ds.EnableControls(); // renable controls
+            //     refreshVariables();
+            // }
+            timer += Time.deltaTime;
 
-            //once completed the function, set back to inactive and reset variables
-            if (state == State.Continuing){
-                ds.EnableControls(); // renable controls
-                refreshVariables();
+            //clear job list if all are inactive
+            if (numActive==0){
+                jobs = new List<Job>();
             }
         }
+        
     }
 
     //uses reflection to be able to invoke methods
-    public void AlisterInvoke(string line){
-        
+    public void AlisterInvoke(Job job){
+        Debug.Log("Name: "+job.name);
+        string funcName = job.name;
+        MethodInfo func = this.GetType().GetMethod(funcName);
+
+        Debug.Log(job.name);
+        //invokes the func
+        func.Invoke(this, null);
     }
 
     // INSERT CUSTOM SCRIPTS HERE 
     // MAKE THEM PUBLIC!!
     // ======================= STORY SCRIPTS =======================
     //chapter 1 func
-    public void c1_1(){
+    public void func1(){
         if (state == State.Displaying){
             List<string> options = new List<string>(){"Aoko, you speak too much", "Stay silent"};
             List<string> results = new List<string>(){"1a", "1b"};
@@ -107,6 +124,11 @@ public class CommandsController : MonoBehaviour
     // MAKE THEM PUBLIC!!
     // ======================== Base Scripts ========================
 
+    public void Clear(){
+        ds.ClearTextThenAdd("");
+        state = State.Inactive;
+    }
+
     //choices = what is displayed on screen
     //result = items to be added to inventory
     public void DisplayChoices(List<string> choices, List<string> result){
@@ -116,15 +138,45 @@ public class CommandsController : MonoBehaviour
     }
 
     public void Jump(string toJumpTo){
-        
+        state = State.Inactive;
     }
 
     public void SendChosenOption(string ret){
         chosenOption = ret;
     }
 
-    public void ExecuteFunction(string func){
-        currentFunc = func;
+    public void ExecuteFunction(string commands){
+        commands = commands.Trim();
+        string[] listOfFuncs = commands.Split(".func");
+
+        foreach (string func in listOfFuncs){
+            if (func.Trim()!=""){
+                string name = func.Trim();
+                name = name.Substring(0, name.IndexOf("("));
+                jobs.Add(new Job(name));
+            }
+        }
+
+        foreach (Job job in jobs){
+            AlisterInvoke(job);
+        }
+    }
+
+    //funcs from the commands 
+    public class Job{
+        public string name;
+        public State state;
+        public double timer;
+
+        public Job(string in_name){
+            name=in_name;
+            state = State.Active;
+            timer=0;
+        }
+
+        public void UpdateTimer(){
+            timer += Time.deltaTime;
+        }
     }
 
 }

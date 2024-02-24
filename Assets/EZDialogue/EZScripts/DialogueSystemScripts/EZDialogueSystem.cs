@@ -95,7 +95,7 @@ public class EZDialogueSystem : MonoBehaviour
         book = new Textbook();
         book.allowDynamicReading = true;
         book.LoadChapter("chapter1.txt");
-        book.Export();
+        // book.Export();
     }
 
     //sets up all the necessary directories
@@ -169,7 +169,7 @@ public class EZDialogueSystem : MonoBehaviour
                     //if there's enough room for an alpha tag
                     if (index+aTagLength<=textObj.text.Length-1) {
                         //if there is indeed an alpha tag here and it is a fade tag
-                        if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
+                        if (GetTagId(index)=="fade"){
                         // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                             textObj.text = textObj.text.Remove(index, aTagLength);
                         }
@@ -185,51 +185,14 @@ public class EZDialogueSystem : MonoBehaviour
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
                     DialogueEntry currentEntry = book.GetNextEntryAndIncrement();
+                    //execute functions
+                    if (currentEntry.commands != ""){
+                        commandController.ExecuteFunction(currentEntry.commands);
+                    }
+                    //add text
                     string text = currentEntry.dialogue;
-                    text = postprocessText(text);
-
-                    //add the text to the textObj 
-                    textObj.text += text;
-                    textObj.ForceMeshUpdate();
-                    // Debug.Log(textObj.textInfo.lineCount);
-
-                    // ===================== DIM TAGS =============================
-                    // if the text doesn't have the dim tags yet, add them 
-                    if (textObj.text.Length>=dimTagLength){
-                        if (textObj.text.Substring(0, dimTagLength)!=dimTag){
-                            AddTag(0, dimTag);
-                        }
-                    } else {
-                        AddTag(0, dimTag);
-                    }
-
-                    if (currentEntry.dialogue != ""){
-                        // remove the old undim tag and place the new undim tag =====
-                        if (undimTagIndex!=-1){
-                            RemoveTag(undimTagIndex, undimTag);
-                        }
-                        undimTagIndex=currentCharIndex;
-                        AddTag(currentCharIndex, undimTag);
-                        // ===========================================================
-
-                        // check if lines have exceeded maxLines     =================
-                        if (textObj.textInfo.lineCount>=maxLines){
-                            //clear current text and set as new text
-                            textObj.text = text;
-                            textObj.ForceMeshUpdate();
-                            if (textObj.textInfo.lineCount>=maxLines){
-                                textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
-                                textObj.ForceMeshUpdate();
-                            }
-                            textObj.maxVisibleCharacters = 0;
-                            currentCharIndex = 0;
-                            undimTagIndex=-1;
-                        }
-                    }
-                    
-
-                    // =========================================================== 
-                    stillDisplaying=true;
+                    text = PostprocessText(text);
+                    AddText(text);
 
                 } else {
                     Debug.Log("Chapter Ended");
@@ -247,8 +210,53 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    public void AddText(string text){
+        //add the text to the textObj 
+        textObj.text += text;
+        textObj.ForceMeshUpdate();
+        // Debug.Log(textObj.textInfo.lineCount
+
+        // ===================== DIM TAGS =============================
+        // if the text doesn't have the dim tags yet, add them 
+        if (textObj.text.Length>=dimTagLength){
+            if (textObj.text.Substring(0, dimTagLength)!=dimTag){
+                AddTag(0, dimTag);
+            }
+        } else {
+            AddTag(0, dimTag);
+        }
+
+        if (text != ""){
+            // remove the old undim tag and place the new undim tag =====
+            if (undimTagIndex!=-1){
+                RemoveTag(undimTagIndex, undimTag);
+            }
+            undimTagIndex=currentCharIndex;
+            AddTag(currentCharIndex, undimTag);
+            // =========================================================
+            // check if lines have exceeded maxLines     =================
+            if (textObj.textInfo.lineCount>=maxLines){
+                //clear current text and set as new text
+                ClearTextThenAdd(text);
+            }
+        }
+        stillDisplaying=true;
+    }
+
+    public void ClearTextThenAdd(string text) {
+        textObj.text = text;
+        textObj.ForceMeshUpdate();
+        if (textObj.textInfo.lineCount>=maxLines){
+            textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
+            textObj.ForceMeshUpdate();
+        }
+        textObj.maxVisibleCharacters = 0;
+        currentCharIndex = 0;
+        undimTagIndex=-1;
+    }
+
     //adds newline indentation or automatically adds a space between sentences
-    private string postprocessText(string text){
+    private string PostprocessText(string text){
         if (text.Length>=1){
             //automatically adds a space between sentences when not on a new line
             if (text.Substring(0,1)!="\n" && textObj.textInfo.characterCount!=0){
@@ -279,7 +287,7 @@ public class EZDialogueSystem : MonoBehaviour
                 //if there's enough letters to possibly house another alpha tag, then continue
                 if (index+aTagLength<=currentTextLength-1) {
                     //if there is an alpha tag here and it is a fade tag
-                    if (textObj.text.Substring(index, 6)=="<alpha" && GetTagId(index)=="fade"){
+                    if (GetTagId(index)=="fade"){
                     // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
@@ -424,7 +432,7 @@ public class EZDialogueSystem : MonoBehaviour
             // for (int i = textObj.text.Length-1; i>=0; i--){
             //     if (c==0) return;
             //         //if there's enough room for an alpha tag
-            //         if (i+aTagLength<=textObj.text.Length-1) {
+            //         if (i+aTagLength<=textObj.text.Length-1) { 
             //             //if there is indeed an alpha tag here and it is a fade tag
             //             if (textObj.text.Substring(i, 6)=="<alpha" && GetTagId(i)=="fade"){
             //                 textObj.text = textObj.text.Remove(i, aTagLength);
@@ -795,7 +803,7 @@ public class EZDialogueSystem : MonoBehaviour
                 } else {
                     Debug.Log("Unknown type of statement on line "+pointer);
                 }
-                // DialogueEntry entry = new DialogueEntry();
+                // DialogueEntry entry = new DialogueEntry(); 
             }
 
             //if no more blocks, then return null
@@ -876,9 +884,9 @@ public class EZDialogueSystem : MonoBehaviour
                 if (oldCommands!=null){
                     // Debug.Log("Multiple .func lines in same block on line "+pointer);
                     // throw new Exception(filename+extension+": Multiple .func lines in same block on line "+pointer);
-                    commands += " "+line.Substring(loc + type.Length).Trim();
+                    commands += " "+line.Trim();
                 } else {
-                    commands = line.Substring(loc + type.Length).Trim();
+                    commands = line.Trim();
                 }
                 
             }

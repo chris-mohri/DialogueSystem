@@ -1,15 +1,14 @@
 
 .route 1
 	.say Two hours had passed and the clock struck nine.
-	.func spawn(Aoko, x, y, t1)
-	.func move(Aoko, x, y, t1, t2)
+	#.func Spawn(Aoko, x, y, t1)
+	#.func Move(Aoko, x, y, t1, t2)
 
 	.say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.
-	.func move(Aoko, x, y, t1, t2)
 
 .label happy
 	Aoko .say \n\n"To be honest, I didn't really want to leave it to Tobimaru like this."
-	.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1, fade=true)
+	#.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1, fade=true)
 	.voice Aoko/chapter1/part1.mp3
 
 	.say A hot, earthenware pot sat on the table.
@@ -23,6 +22,7 @@
 	.say Alice sat across from Aoko as she silently poked at the pot with a fork.
 
 	Aoko .say "Yamasiro made it a point to say that Sizuki hadn't joined a club. It's not like I have the time or energy to keep track of every single student."
+	.func Clear()
 
 	.say The egg she had plucked was still as silky as a baby's bottom, so she returned it to the pot.
 
