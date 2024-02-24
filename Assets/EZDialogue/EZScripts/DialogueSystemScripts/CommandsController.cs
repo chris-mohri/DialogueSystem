@@ -113,7 +113,7 @@ public class CommandsController : MonoBehaviour
 
     //moves the in-game object named <obj> by x and y from starting after <twait> seconds have
     //initially passed, and will take <tTravel> seconds to fully move x and y
-    public IEnumerator Move(string obj, int xTravel, int yTravel, float tWait, float tTravel){
+    public IEnumerator Move(string obj, int xTravel, int yTravel, float tWait, float tTravel, bool skippable){
         yield return new WaitForSeconds(tWait);
         Debug.Log("placeholder");
     }
@@ -123,14 +123,17 @@ public class CommandsController : MonoBehaviour
         // state = State.Inactive;
     }
 
+    public void NewPage(){
+        ds.ClearTextThenRestateEntry();
+        // state = State.Inactive;
+    }
+
     // TODO
     //choices = what is displayed on screen
     //result = items to be added to inventory
-    public void DisplayChoices(List<string> choices, List<string> result){
+    public void DisplayChoices(List<string> choices, List<string> results){
         chosenOption = null;
-        ds.DisplayChoices(choices, result);
-
-        //create the game object with choices 
+        StartCoroutine(DisplayChoicesAfter(choices, results));
     }
 
     public void Jump(string toJumpTo){
@@ -185,6 +188,15 @@ public class CommandsController : MonoBehaviour
         queue.remaining--;
     }
 
+    //displays the choices only when the question has been fully displayed
+    private IEnumerator DisplayChoicesAfter(List<string> choices, List<string> results) {
+        //wait until question has been fully displayed, then display the choices
+        while(ds.moreLettersToDisplay == true){
+            yield return null;
+        }
+        ds.DisplayChoices(choices, results);
+    }
+
     //external option menu will send the response back to here with this func
     public void SendChosenOption(string ret){
         chosenOption = ret;
@@ -229,8 +241,9 @@ public class CommandsController : MonoBehaviour
         }
     }
 
-    public bool StillExecuting(){
-        return queue.remaining != 0;
+    public bool ReadyToContinue(){
+        //todo account for animations that play as dialogue plays
+        return queue.remaining == 0;
     }
 
     private object[] ParseArgs(string func, string argsToParse){
@@ -274,7 +287,9 @@ public class CommandsController : MonoBehaviour
             return int.Parse(arg);
         } else if (parameterType == typeof(float)) {
             return float.Parse(arg);
-        } 
+        } else if (parameterType == typeof(bool)){
+            return bool.Parse(arg);
+        }
         return null;
     }
 

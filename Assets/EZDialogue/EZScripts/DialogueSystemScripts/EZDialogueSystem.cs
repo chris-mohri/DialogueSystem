@@ -25,7 +25,7 @@ public class EZDialogueSystem : MonoBehaviour
     private bool displayingChoices = false;
     private bool canContinue = true; //if the player can continue to the next entry
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
-    private bool stillDisplaying=false;
+    public bool moreLettersToDisplay=false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
     //max number of lines that the text can occupy on screen
@@ -177,26 +177,29 @@ public class EZDialogueSystem : MonoBehaviour
                 SkipFade();
 
                 //skip to the end of all commands (if possible e.g. not waiting for user input)
-                if (commandController.StillExecuting()){
+                if (!commandController.ReadyToContinue()){
                     SkipCommands();
                 }
 
-            } else if (commandController.StillExecuting()){ //if a command's animation is still playing, then skip to the end result
+            } else if (!commandController.ReadyToContinue()){ //if a command's animation is still playing, then skip to the end result
                 SkipCommands(); //maybe require a double click?
                 
             } 
-            else { //otherwise start displaying the next entry
+            else if (commandController.ReadyToContinue()){ //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
                     DialogueEntry currentEntry = book.GetNextEntryAndIncrement();
-                    //execute functions
-                    if (currentEntry.commands != ""){
-                        commandController.ExecuteFunction(currentEntry.commands);
-                    }
+                    
                     //add text
                     string text = currentEntry.dialogue;
                     text = PostprocessText(text);
                     AddText(text);
+
+                    //execute functions (must happen after so commands can add text)
+                    if (currentEntry.commands != ""){
+                        commandController.ExecuteFunction(currentEntry.commands);
+                    }
+
 
                 } else {
                     Debug.Log("Chapter Ended");
@@ -205,12 +208,11 @@ public class EZDialogueSystem : MonoBehaviour
             }
         //if the user tries to click when dialogue is paused
         } else if (canContinue == false && controls.Keyboard.Continue.triggered){
-            if (commandController.StillExecuting()){
-                    SkipCommands();
+            if (!commandController.ReadyToContinue()){
+                SkipCommands();
             }
-
             if (displayingChoices==true){
-
+                //check bounding boxes
             }
 
 
@@ -226,9 +228,29 @@ public class EZDialogueSystem : MonoBehaviour
 
     //displays choices
     public void DisplayChoices(List<string> choices, List<string> result){
-        // canContinue = false;
-        // displayingChoices = true; 
-        Debug.Log("waiting");
+        canContinue = false;
+        displayingChoices = true; 
+        
+        string text="\n\n"+aTag1;
+        string innerText="";
+        for (int i = 0; i<choices.Count; i++){
+            int num = i+1;
+            innerText = choices[i];
+            text+=num+".   "+innerText+"\n";
+        }
+        text+="\n";
+
+        //add the text
+        textObj.text += text;
+        textObj.ForceMeshUpdate();
+        textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+        currentCharIndex = textObj.text.Length;
+
+        if (textObj.textInfo.lineCount>=maxLines){
+            //clear current text and set as new text
+            ClearTextThenAdd(text);
+        }
+
 
     }
 
@@ -249,11 +271,8 @@ public class EZDialogueSystem : MonoBehaviour
     }
 
     public void SkipCommands(){
-        commandController.Skip(); 
-        while (commandController.GetSkip()==true){
-            //wait until all commands are skipped
-            break; //TODO get rid of this
-        }
+        commandController.Skip();
+        //what if there are some animations that want to be played while dialogue is happening?
     }
 
     public void AddText(string text){
@@ -286,7 +305,20 @@ public class EZDialogueSystem : MonoBehaviour
                 ClearTextThenAdd(text);
             }
         }
-        stillDisplaying=true;
+        moreLettersToDisplay=true;
+    }
+
+    //clears then restates the previous entry
+    public void ClearTextThenRestateEntry(){
+        textObj.text = book.GetCurrentEntry().dialogue;
+        textObj.ForceMeshUpdate();
+        if (textObj.textInfo.lineCount>=maxLines){
+            textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
+            textObj.ForceMeshUpdate();
+        }
+        textObj.maxVisibleCharacters = 0;
+        currentCharIndex = 0;
+        undimTagIndex=-1;
     }
 
     public void ClearTextThenAdd(string text) {
@@ -322,7 +354,7 @@ public class EZDialogueSystem : MonoBehaviour
     }
 
     private void AddLettersToScreen(){
-        stillDisplaying=false;
+        moreLettersToDisplay=false;
         int currentTextLength = textObj.text.Length;
 
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
@@ -363,7 +395,7 @@ public class EZDialogueSystem : MonoBehaviour
         if (displayTimer >= displaySpeed){
             //if there are more letters to fade in
             if (textObj.maxVisibleCharacters<textObj.textInfo.characterCount){     
-                stillDisplaying=true;
+                moreLettersToDisplay=true;
 
                 //add the alpha tag
                 AddTag(currentCharIndex, aTag1);
@@ -607,7 +639,10 @@ public class EZDialogueSystem : MonoBehaviour
         }
 
         public virtual DialogueEntry GetCurrentEntry(){
-            return currentEntry;
+            // if (bookmark == 0){
+            //     throw new Exception("No entry has been read yet");
+            // }
+            return currentRoute[bookmark];
         }
 
         public virtual DialogueEntry GetNextEntryAndIncrement(){
@@ -659,7 +694,7 @@ public class EZDialogueSystem : MonoBehaviour
 
         //files
         private string jsonConvertFilePath = dialogueFolderPath + "TEXTtoJSON/";
-        private string textConvertFilePath = dialogueFolderPath + "/JSONtoText/";
+        private string textConvertFilePath = dialogueFolderPath + "JSONtoText/";
         private string filename; //includes extension type
         private string extension;
 
@@ -1035,6 +1070,15 @@ public class EZDialogueSystem : MonoBehaviour
           
         }
 
+        public override DialogueEntry GetCurrentEntry(){
+            if (extension == ".txt" && allowDynamicReading==true){
+                return currentEntry;
+            } else {
+                return base.GetCurrentEntry();
+            }
+
+        }
+
         //gets the next entry and increments as needed
         public override DialogueEntry GetNextEntryAndIncrement(){
             if (extension == ".txt" && allowDynamicReading==true){
@@ -1069,7 +1113,14 @@ public class EZDialogueSystem : MonoBehaviour
             } else {
                 return base.IsEnd();
             }
+        }
 
+        public string[] GetLines(){
+            return lines;
+        }
+
+        public void SetPointer(int i){
+            pointer=i;
         }
 
     }
