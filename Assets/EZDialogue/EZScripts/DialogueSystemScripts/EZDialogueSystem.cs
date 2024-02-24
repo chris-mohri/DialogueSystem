@@ -28,10 +28,6 @@ public class EZDialogueSystem : MonoBehaviour
     private bool moreLettersToDisplay=false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
-    //max number of lines that the text can occupy on screen
-    //search by text.textInfo.lineCount
-    [SerializeField] [Tooltip("Maximum number of lines the text can occupy before moving to next page")] [Range(1, 1000)]
-    private int maxLines = 13;
     //tracks the index of the newest letter shown on screen from the raw text
     //  (raw text also counts any of TMPro's alpha or color tags that don't show up
     //  when using textObj.textInfo.characterCount)
@@ -246,7 +242,7 @@ public class EZDialogueSystem : MonoBehaviour
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
-        if (textObj.textInfo.lineCount>=maxLines){
+        if (textObj.isTextOverflowing){
             //clear current text and set as new text
             ClearTextThenAdd(text);
         }
@@ -300,7 +296,7 @@ public class EZDialogueSystem : MonoBehaviour
             AddTag(currentCharIndex, undimTag);
             // =========================================================
             // check if lines have exceeded maxLines     =================
-            if (textObj.textInfo.lineCount>=maxLines){
+            if (textObj.isTextOverflowing){
                 //clear current text and set as new text
                 ClearTextThenAdd(text);
             }
@@ -312,7 +308,7 @@ public class EZDialogueSystem : MonoBehaviour
     public void ClearTextThenRestateEntry(){
         textObj.text = book.GetCurrentEntry().dialogue;
         textObj.ForceMeshUpdate();
-        if (textObj.textInfo.lineCount>=maxLines){
+        if (textObj.isTextOverflowing){
             textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
             textObj.ForceMeshUpdate();
         }
@@ -324,7 +320,7 @@ public class EZDialogueSystem : MonoBehaviour
     public void ClearTextThenAdd(string text) {
         textObj.text = text;
         textObj.ForceMeshUpdate();
-        if (textObj.textInfo.lineCount>=maxLines){
+        if (textObj.isTextOverflowing){
             textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
             textObj.ForceMeshUpdate();
         }
@@ -539,6 +535,13 @@ public class EZDialogueSystem : MonoBehaviour
     //returns if there are more letters to display
     public bool LettersStillDisplaying(){
         return moreLettersToDisplay;
+    }
+
+    public bool IsMenu(){
+        if (displayingChoices==true)
+            return true;
+
+        return false;
     }
 
 

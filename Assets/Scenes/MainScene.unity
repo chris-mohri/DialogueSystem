@@ -497,8 +497,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 70}
+  m_AnchoredPosition: {x: 14.303589, y: -0.918396}
+  m_SizeDelta: {x: 1721, y: 943}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1041983446
 MonoBehaviour:
@@ -583,7 +583,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -783.1956, y: -454.4038, z: -786.27686, w: -454.75125}
+  m_margin: {x: -0.7770386, y: -0.2133789, z: -1.7645264, w: -1.4822083}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -685,6 +685,7 @@ GameObject:
   - component: {fileID: 1331631634}
   - component: {fileID: 1331631635}
   - component: {fileID: 1331631636}
+  - component: {fileID: 1331631637}
   m_Layer: 5
   m_Name: DialogueSystem
   m_TagString: Untagged
@@ -728,7 +729,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DialogueObject: {fileID: 1041983444}
-  maxLines: 13
+  maxLines: 12
   alphaIncrement: 5
   displaySpeed: 0.029999999329447746
   fadeSpeed: 0.004000000189989805
@@ -747,7 +748,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 678903c14036175438cb1f981c779078, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseImgDirectory: Assets/Images/
 --- !u!114 &1331631636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -760,3 +760,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6cb6c1e2684c734c95ccdb1e81d3216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1331631637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1331631632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 557f77f719e52b949a8836ccf7995972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DialogueObject: {fileID: 1041983444}
