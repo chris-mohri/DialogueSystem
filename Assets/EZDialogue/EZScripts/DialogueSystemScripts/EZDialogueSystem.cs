@@ -178,8 +178,21 @@ public class EZDialogueSystem : MonoBehaviour
                 textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
                 currentCharIndex = textObj.text.Length;
 
-            } else if (false){ //if a command's animation is still playing, then skip to the end result
-                //TODO
+                //skip to the end of all commands 
+                if (commandController.StillExecuting()){
+                    commandController.Skip(); 
+                    while (commandController.GetSkip()==true){
+                        //wait until all commands are skipped
+                        break;
+                    }
+                }
+
+            } else if (commandController.StillExecuting()){ //if a command's animation is still playing, then skip to the end result
+                commandController.Skip(); 
+                    while (commandController.GetSkip()==true){
+                        //wait until all commands are skipped
+                        break;
+                    }
             } 
             else { //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying

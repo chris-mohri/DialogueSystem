@@ -41,7 +41,7 @@
 	.say Her expression stated that she had no interest nor opinion on the matter, but she at least appeared to be listening.
 
 	#displays to the screen 
-	.func c1_1()
+	.func func1()
 
 	
 .route 1b
