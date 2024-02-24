@@ -6,7 +6,7 @@ public class SavedInformation : MonoBehaviour
 {
     //data objects to hold important information/items
     public Dictionary<string, int> routeInfo; //contains route keys (just markers for which routes were taken)
-    public Dictionary<string, int> inventory; //inventory items. 
+    public Dictionary<string, int> inventory; //inventory items.
 
     void Start(){
         routeInfo = new Dictionary<string, int>();

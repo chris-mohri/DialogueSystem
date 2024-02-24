@@ -7,8 +7,8 @@ using System.Reflection;
 public class CommandsController : MonoBehaviour
 {
 
-    [SerializeField] [Tooltip("Directory for where images are located")]
-    // private string baseImgDirectory = "Assets/Images/";
+    // [SerializeField] [Tooltip("Directory for where images are located")]
+    // private string baseImgDirectory = "Assets/Images/"; 
 
     //the dialogue system script (needed to access methods)
     private EZDialogueSystem ds;
@@ -191,7 +191,7 @@ public class CommandsController : MonoBehaviour
     //displays the choices only when the question has been fully displayed
     private IEnumerator DisplayChoicesAfter(List<string> choices, List<string> results) {
         //wait until question has been fully displayed, then display the choices
-        while(ds.moreLettersToDisplay == true){
+        while(ds.LettersStillDisplaying() == true){
             yield return null;
         }
         ds.DisplayChoices(choices, results);

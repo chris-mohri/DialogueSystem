@@ -25,7 +25,7 @@ public class EZDialogueSystem : MonoBehaviour
     private bool displayingChoices = false;
     private bool canContinue = true; //if the player can continue to the next entry
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
-    public bool moreLettersToDisplay=false;
+    private bool moreLettersToDisplay=false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
     //max number of lines that the text can occupy on screen
@@ -235,8 +235,8 @@ public class EZDialogueSystem : MonoBehaviour
         string innerText="";
         for (int i = 0; i<choices.Count; i++){
             int num = i+1;
-            innerText = choices[i];
-            text+=num+".   "+innerText+"\n";
+            innerText = choices[i]+"</link>";
+            text+= "<link="+result[i]+">"+num+".   "+innerText+"\n";
         }
         text+="\n";
 
@@ -534,6 +534,11 @@ public class EZDialogueSystem : MonoBehaviour
         }
         textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
+    }
+
+    //returns if there are more letters to display
+    public bool LettersStillDisplaying(){
+        return moreLettersToDisplay;
     }
 
 
