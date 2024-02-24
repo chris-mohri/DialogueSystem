@@ -22,6 +22,8 @@ public class EZDialogueSystem : MonoBehaviour
     private TMP_Text textObj; //the text component to the DialogueObject
 
     // ------------------- text display/animation variables -------------------
+    private bool displayingChoices = false;
+    private bool canContinue = true; //if the player can continue to the next entry
     //true if the letters of the current entry are still being displayed 1 by 1, false if finished
     private bool stillDisplaying=false;
     //indentation spaces for new lines. adjust as needed
@@ -146,6 +148,14 @@ public class EZDialogueSystem : MonoBehaviour
         controls.Enable();
     }
 
+    public void DisableContinue(){
+        canContinue = false;
+    }
+
+    public void EnableContinue(){
+        canContinue = true;
+    }
+
     // Update is called once per frame
     void Update(){
         HandleScreen();
@@ -161,38 +171,19 @@ public class EZDialogueSystem : MonoBehaviour
             textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         }
         //if the player presses continue
-        if (controls.Keyboard.Continue.triggered){
+        if (canContinue == true && controls.Keyboard.Continue.triggered){
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
             if (textObj.maxVisibleCharacters < textObj.textInfo.characterCount) {
-                //set all letters to alpha/opacity to 100% (by removing the alpha tags)
-                for (int index = textObj.text.Length-1; index>=0; index--){
-                    //if there's enough room for an alpha tag
-                    if (index+aTagLength<=textObj.text.Length-1) {
-                        //if there is indeed an alpha tag here and it is a fade tag
-                        if (GetTagId(index)=="fade"){
-                        // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
-                            textObj.text = textObj.text.Remove(index, aTagLength);
-                        }
-                    }
-                }
-                textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
-                currentCharIndex = textObj.text.Length;
+                SkipFade();
 
-                //skip to the end of all commands 
+                //skip to the end of all commands (if possible e.g. not waiting for user input)
                 if (commandController.StillExecuting()){
-                    commandController.Skip(); 
-                    while (commandController.GetSkip()==true){
-                        //wait until all commands are skipped
-                        break;
-                    }
+                    SkipCommands();
                 }
 
             } else if (commandController.StillExecuting()){ //if a command's animation is still playing, then skip to the end result
-                commandController.Skip(); 
-                    while (commandController.GetSkip()==true){
-                        //wait until all commands are skipped
-                        break;
-                    }
+                SkipCommands(); //maybe require a double click?
+                
             } 
             else { //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying
@@ -212,6 +203,16 @@ public class EZDialogueSystem : MonoBehaviour
                 }
 
             }
+        //if the user tries to click when dialogue is paused
+        } else if (canContinue == false && controls.Keyboard.Continue.triggered){
+            if (commandController.StillExecuting()){
+                    SkipCommands();
+            }
+
+            if (displayingChoices==true){
+
+            }
+
 
         }
         // Debug.Log(textObj.text);
@@ -221,6 +222,38 @@ public class EZDialogueSystem : MonoBehaviour
 
         //display the letters
         AddLettersToScreen();
+    }
+
+    //displays choices
+    public void DisplayChoices(List<string> choices, List<string> result){
+        // canContinue = false;
+        // displayingChoices = true; 
+        Debug.Log("waiting");
+
+    }
+
+    public void SkipFade(){
+        //set all letters to alpha/opacity to 100% (by removing the alpha tags)
+        for (int index = textObj.text.Length-1; index>=0; index--){
+            //if there's enough room for an alpha tag
+            if (index+aTagLength<=textObj.text.Length-1) {
+                //if there is indeed an alpha tag here and it is a fade tag
+                if (GetTagId(index)=="fade"){
+                // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
+                    textObj.text = textObj.text.Remove(index, aTagLength);
+                }
+            }
+        }
+        textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+        currentCharIndex = textObj.text.Length;
+    }
+
+    public void SkipCommands(){
+        commandController.Skip(); 
+        while (commandController.GetSkip()==true){
+            //wait until all commands are skipped
+            break; //TODO get rid of this
+        }
     }
 
     public void AddText(string text){

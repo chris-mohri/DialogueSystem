@@ -67,7 +67,7 @@ public class CommandsController : MonoBehaviour
         skip = false;
     }
 
-    // Update is called once per frame
+    // Update is called once per frame 
     void Update() {
         if (queue.remaining == 0){
             skip = false;
@@ -128,7 +128,7 @@ public class CommandsController : MonoBehaviour
     //result = items to be added to inventory
     public void DisplayChoices(List<string> choices, List<string> result){
         chosenOption = null;
-        ds.DisableControls(); //forbid continuation of story 
+        ds.DisplayChoices(choices, result);
 
         //create the game object with choices 
     }
