@@ -81,11 +81,8 @@ public class CommandsController : MonoBehaviour
 
     //uses reflection to be able to invoke methods
     public void AlisterInvoke(Job job){
-        Debug.Log("Name: "+job.name);
         string funcName = job.name;
         MethodInfo func = this.GetType().GetMethod(funcName);
-
-        Debug.Log(job.name);
         //invokes the func
         func.Invoke(this, null);
     }
@@ -153,23 +150,33 @@ public class CommandsController : MonoBehaviour
             if (func.Trim()!=""){
                 string name = func.Trim();
                 name = name.Substring(0, name.IndexOf("("));
-                jobs.Add(new Job(name));
+                jobs.Add(new Job(name, null));
             }
         }
 
         foreach (Job job in jobs){
             AlisterInvoke(job);
         }
+
+        //try to parse via objects[]
+    }
+
+    public object[] ParseArgs(string func, string argsToParse){
+        string args = argsToParse;
+
+        return null;
     }
 
     //funcs from the commands 
     public class Job{
         public string name;
+        public object[] args;
         public State state;
         public double timer;
 
-        public Job(string in_name){
+        public Job(string in_name, object[] in_args){
             name=in_name;
+            args=in_args;
             state = State.Active;
             timer=0;
         }
