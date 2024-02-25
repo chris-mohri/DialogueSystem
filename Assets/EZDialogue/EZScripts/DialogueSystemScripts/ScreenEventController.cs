@@ -21,11 +21,13 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private TMP_Text textbox;
     private Canvas canvas;
 
-    private int currentlyHoveredLink;
+    private int previouslyHoveredLink;
 
     // Start is called before the first frame update
     void Awake()
     {
+        previouslyHoveredLink = -1;
+
         ds = GetComponent<EZDialogueSystem>();
         textbox = DialogueObject.GetComponent<TMP_Text>();
         canvas = GetComponentInParent<Canvas>();
@@ -52,27 +54,38 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private void CheckHover(){
         //only check hover if there's a menu on screen
         if (ds.IsMenu()==false){
+            previouslyHoveredLink = -1;
             return;
         }
         
         Vector3 mousePosition = Mouse.current.position.ReadValue();
 
-        //checks if mouse collides with text object 
-        bool hasIntersectionWithChoice = TMP_TextUtilities.IsIntersectingRectTransform(textRectTransform, mousePosition, camera);
-        Debug.Log(hasIntersectionWithChoice);
-        if(!hasIntersectionWithChoice){
-            return;
-        }
+        // //checks if mouse collides with text object 
+        // bool hasIntersectionWithChoice = TMP_TextUtilities.IsIntersectingRectTransform(textRectTransform, mousePosition, camera);
+        // Debug.Log(hasIntersectionWithChoice);
+        // if(!hasIntersectionWithChoice){
+        //     return;
+        // }
 
+        //check if hovering over a choice option
         int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
-
-        if(link!=-1){
-            currentlyHoveredLink = link;
+        if(link!=-1){     
             TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
-            Debug.Log("Hovering: "+linkInfo.GetLinkID());
+            string linkId = linkInfo.GetLinkID();
+            //only change the color when necessary
+            if (previouslyHoveredLink==-1){
+                ds.ChangeOptionColor(linkId, ds.hoverColor);
+            } else if (previouslyHoveredLink!=link){
+                ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
+                ds.ChangeOptionColor(linkId, ds.hoverColor);
+            }
+            previouslyHoveredLink = link;
+        } else {
+            if (previouslyHoveredLink!=-1){
+                ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
+            }
+            previouslyHoveredLink=-1;
         }
-
-
     }
 
     void Update(){

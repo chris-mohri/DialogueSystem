@@ -46,6 +46,8 @@ public class EZDialogueSystem : MonoBehaviour
     private int aTagLength;
     //keeps track of the un-dim tags. 
     private int undimTagIndex=-1;
+    [SerializeField] [Tooltip("(Default: ddffff) Hex color for hovering over choice options")]
+    public string hoverColor = "ddffff";
 
     // ------------------- keeps track of time -------------------
     private double currentTime = 0.0f;
@@ -80,6 +82,12 @@ public class EZDialogueSystem : MonoBehaviour
         //verify that the necessary folders exist
         if (autoCreateDirectories){
             SetupFolders();
+        }
+
+        //check if public variables are valid
+        if (!IsValidHex(hoverColor)){
+            hoverColor = "ddffff";
+            Debug.Log("Hover color is not valid hexadecimal. (you should omit the # if you had one)");
         }
 
         //setup connection with other components
@@ -222,17 +230,21 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    
+
     //displays choices
     public void DisplayChoices(List<string> choices, List<string> result){
         canContinue = false;
         displayingChoices = true; 
         
-        string text="\n\n"+aTag1;
-        string innerText="";
+        string text="\n\n";
+        string middle="";
+        string left="";
         for (int i = 0; i<choices.Count; i++){
             int num = i+1;
-            innerText = choices[i]+"</link>";
-            text+= "<link="+result[i]+">"+num+".   "+innerText+"\n";
+            left = "<link="+result[i]+"><color=#ffffff>"+aTag1+num+".   ";
+            middle = choices[i]+"</link>";
+            text+= left+middle+"\n";
         }
         text+="\n";
 
@@ -257,7 +269,6 @@ public class EZDialogueSystem : MonoBehaviour
             if (index+aTagLength<=textObj.text.Length-1) {
                 //if there is indeed an alpha tag here and it is a fade tag
                 if (GetTagId(index)=="fade"){
-                // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
                     textObj.text = textObj.text.Remove(index, aTagLength);
                 }
             }
@@ -350,7 +361,10 @@ public class EZDialogueSystem : MonoBehaviour
     }
 
     private void AddLettersToScreen(){
-        moreLettersToDisplay=false;
+        if (textObj.maxVisibleCharacters==textObj.textInfo.characterCount){ 
+            moreLettersToDisplay=false;
+        }
+
         int currentTextLength = textObj.text.Length;
 
         //in a faster timer, update every alpha tag in the list, removing tags that reach 100%
@@ -366,7 +380,13 @@ public class EZDialogueSystem : MonoBehaviour
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
                         string hex = oldTag.Substring(8, 2);
-                        string newHex = AddPercentToHex(hex, alphaIncrement);
+                        string newHex;
+                        //add the appropriate alpha increment
+                        if (displayingChoices){
+                            newHex = AddPercentToHex(hex, alphaIncrement/5);
+                        } else {
+                            newHex = AddPercentToHex(hex, alphaIncrement);
+                        }
                         string newTag = $"<alpha=#{newHex}><link=fade></link>";
                         //mark for removal
                         if (newHex=="FF"){
@@ -438,7 +458,18 @@ public class EZDialogueSystem : MonoBehaviour
         }
     }
 
-    //gets the id for the tag at the index
+    //<link=1a><color=#aaaaaa><l></l>1. hi there</link>
+    public void ChangeOptionColor(string id, string color){
+        string newColor = "<link="+id+">";
+        int indexOfLink = textObj.text.IndexOf(newColor);
+        string toReplace = textObj.text.Substring(indexOfLink, 22+id.Length);
+        newColor = "<link="+id+">"+"<color=#"+color+">";
+        textObj.text = textObj.text.Replace(toReplace, newColor);
+    }
+
+
+    //gets the id for the tag at the index in the following form
+    //<tag><link=id></link>
     private string GetTagId(int index){
         //continue only if this is a tag
         if (textObj.text[index]=='<'){
@@ -528,8 +559,15 @@ public class EZDialogueSystem : MonoBehaviour
             Debug.Log("Invalid Index When Removing Tag");
             return;
         }
+        Debug.Log(index+" | "+tag +" | "+textObj.text.Substring(index, tag.Length));
         textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
+    }
+
+    //checks if 6-character sequence is valid hex
+    public static bool IsValidHex(string hex){
+        string pattern = @"^[0-9A-Fa-f]{6}$";
+        return Regex.IsMatch(hex, pattern);
     }
 
     //returns if there are more letters to display

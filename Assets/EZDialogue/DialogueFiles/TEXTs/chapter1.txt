@@ -12,6 +12,7 @@
 	.voice Aoko/chapter1/part1.mp3
 
 	.say A hot, earthenware pot sat on the table.
+	.func func1()
 
 	.say Aoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.
 
@@ -21,7 +22,7 @@
 
 	.say Alice sat across from Aoko as she silently poked at the pot with a fork.
 
-	Aoko .say \n\n"Yamasiro made it a point to say that Sizuki hadn't joined a club. It's not like I have the time or energy to keep track of every single student."
+	Aoko .say "Yamasiro made it a point to say that Sizuki hadn't joined a club. It's not like I have the time or energy to keep track of every single student."
 
 	.say \n\nThe egg she had plucked was still as silky as a baby's bottom, so she returned it to the pot.
 
