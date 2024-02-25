@@ -74,7 +74,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
             if(link!=-1){     
                 TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
                 string linkId = linkInfo.GetLinkID();
-                // Debug.Log(linkId);
+                
                 //only change the color when necessary
                 if (previouslyHoveredLink==-1){
                     ds.ChangeOptionColor(linkId, ds.hoverColor);

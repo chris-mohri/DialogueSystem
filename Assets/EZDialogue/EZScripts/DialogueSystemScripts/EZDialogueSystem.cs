@@ -22,10 +22,16 @@ public class EZDialogueSystem : MonoBehaviour
     private TMP_Text textObj; //the text component to the DialogueObject
 
     // ------------------- text display/animation variables -------------------
+    //variables here need to be saved into save file
     private bool displayingChoices = false;
     private bool canContinue = true; //if the player can continue to the next entry
-    //true if the letters of the current entry are still being displayed 1 by 1, false if finished
-    private bool moreLettersToDisplay=false;
+    private bool moreLettersToDisplay=false;//true if the letters of the current entry are still being displayed 1 by 1, false if finished
+    private int undimTagIndex=-1; //keeps track of the un-dim tags. 
+    public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+
+
+    // === variables below here are not needed to be saved in save files ===
+    private bool forceContinue = false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
     //tracks the index of the newest letter shown on screen from the raw text
@@ -42,10 +48,7 @@ public class EZDialogueSystem : MonoBehaviour
     private string dimTag = "<color=#aaaaaa><link=$dim$></link><alpha=#b8><link=$dim$></link>";
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
-    //set as 11
-    private int aTagLength;
-    //keeps track of the un-dim tags. 
-    private int undimTagIndex=-1;
+    private int aTagLength; //set as 11
     [SerializeField] [Tooltip("(Default: ddffff) Hex color for hovering over choice options")]
     public string hoverColor = "ddffff";
 
@@ -64,9 +67,6 @@ public class EZDialogueSystem : MonoBehaviour
     private static string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
     [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
     private bool autoCreateDirectories = true;
-
-    //the main data object that holds the dialogue information. must be accessible to CommandsController
-    public Book book;
 
     void Awake(){
         //creates the player controls
@@ -176,8 +176,10 @@ public class EZDialogueSystem : MonoBehaviour
         if (textObj.maxVisibleCharacters > textObj.textInfo.characterCount){
             textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         }
-        //if the player presses continue
-        if (canContinue == true && controls.Keyboard.Continue.triggered){
+        //if the player presses continue (or is automatically continued by pressing a choice)
+        if (canContinue == true && (controls.Keyboard.Continue.triggered || forceContinue)){
+            forceContinue=false;
+
             //if still displaying the previous entry when clicked, set maxVisibleCharacters to max
             if (textObj.maxVisibleCharacters < textObj.textInfo.characterCount) {
                 SkipFade();
@@ -246,6 +248,8 @@ public class EZDialogueSystem : MonoBehaviour
             RemoveTag(l, tagToRemove);
             index = textObj.text.IndexOf("<link=$opt_");
         }
+
+        forceContinue=true;
         
     }
 
@@ -275,8 +279,6 @@ public class EZDialogueSystem : MonoBehaviour
             //clear current text and set as new text
             ClearTextThenAdd(text);
         }
-
-
     }
 
     public void SkipFade(){

@@ -72,10 +72,7 @@ public class CommandsController : MonoBehaviour
             refreshVariables();
             newJobWave = false;
         }
-        
     }
-
-    
 
     // INSERT CUSTOM SCRIPTS HERE 
     // MAKE THEM PUBLIC!!
