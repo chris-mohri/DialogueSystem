@@ -232,6 +232,10 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    public void PlayerChoseAnOption(){
+        canContinue = true;
+        displayingChoices = false;
+    }
     
 
     //displays choices 

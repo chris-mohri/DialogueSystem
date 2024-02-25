@@ -10,6 +10,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 {
     //the dialogue system script (needed to access methods)
     private EZDialogueSystem ds;
+    private CommandsController commandsController;
 
     [SerializeField]
     private GameObject DialogueObject;
@@ -32,6 +33,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         textbox = DialogueObject.GetComponent<TMP_Text>();
         canvas = GetComponentInParent<Canvas>();
         textRectTransform = DialogueObject.GetComponent<RectTransform>();
+        commandsController = GetComponent<CommandsController>();
 
         if(canvas.renderMode == RenderMode.ScreenSpaceOverlay){
             camera = null;
@@ -43,12 +45,17 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData){
         Vector3 mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0);
 
-        //check if a choice option was clicked
-        int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
-        if(link!=-1){
-            TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
-            Debug.Log("Clicked: "+linkInfo.GetLinkID());
+        //only continue if the user hasn't chosen an option yet
+        if (commandsController.HasChosenOption()==false){
+            //check if a choice option was clicked
+            int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
+            if(link!=-1){
+                TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
+                Debug.Log("Clicked: "+linkInfo.GetLinkID());
+                commandsController.SendChosenOption(linkInfo.GetLinkID());
+            }
         }
+
     }
 
     private void CheckHover(){
@@ -60,32 +67,28 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         
         Vector3 mousePosition = Mouse.current.position.ReadValue();
 
-        // //checks if mouse collides with text object 
-        // bool hasIntersectionWithChoice = TMP_TextUtilities.IsIntersectingRectTransform(textRectTransform, mousePosition, camera);
-        // Debug.Log(hasIntersectionWithChoice);
-        // if(!hasIntersectionWithChoice){
-        //     return;
-        // }
-
-        //check if hovering over a choice option
-        int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
-        if(link!=-1){     
-            TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
-            string linkId = linkInfo.GetLinkID();
-            // Debug.Log(linkId);
-            //only change the color when necessary
-            if (previouslyHoveredLink==-1){
-                ds.ChangeOptionColor(linkId, ds.hoverColor);
-            } else if (previouslyHoveredLink!=link){
-                ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
-                ds.ChangeOptionColor(linkId, ds.hoverColor);
+        //only continue if the user hasn't chosen an option yet
+        if (commandsController.HasChosenOption()==false){
+            //check if hovering over a choice option
+            int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
+            if(link!=-1){     
+                TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
+                string linkId = linkInfo.GetLinkID();
+                // Debug.Log(linkId);
+                //only change the color when necessary
+                if (previouslyHoveredLink==-1){
+                    ds.ChangeOptionColor(linkId, ds.hoverColor);
+                } else if (previouslyHoveredLink!=link){
+                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
+                    ds.ChangeOptionColor(linkId, ds.hoverColor);
+                }
+                previouslyHoveredLink = link;
+            } else {
+                if (previouslyHoveredLink!=-1){
+                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
+                }
+                previouslyHoveredLink=-1;
             }
-            previouslyHoveredLink = link;
-        } else {
-            if (previouslyHoveredLink!=-1){
-                ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
-            }
-            previouslyHoveredLink=-1;
         }
     }
 

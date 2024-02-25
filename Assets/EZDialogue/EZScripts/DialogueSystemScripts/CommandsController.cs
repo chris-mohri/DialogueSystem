@@ -18,12 +18,10 @@ public class CommandsController : MonoBehaviour
 
     //the choice menu variables
     private string chosenOption;
-
     private bool skip;
 
     //required variables to handle function execution 
     private JobQueue queue;
-    private double timer;
     private bool newJobWave = false;
 
     // private State state;
@@ -50,7 +48,6 @@ public class CommandsController : MonoBehaviour
 
         //refresh variables 
         queue = new JobQueue();
-        timer = 0f;
         chosenOption = null;
         skip = false;
 
@@ -62,7 +59,6 @@ public class CommandsController : MonoBehaviour
 
     public void refreshVariables(){
         queue.Clear();
-        timer = 0f;
         chosenOption = null;
         skip = false;
     }
@@ -89,21 +85,19 @@ public class CommandsController : MonoBehaviour
         //ask for input
         List<string> options = new List<string>(){"Aoko, you speak too much", "Stay silent"};
         List<string> results = new List<string>(){"1a", "1b"};
-        DisplayChoices(options, results);
 
-        //wait for user input
-        while(chosenOption != null){
-            yield return null;
-        }
+        yield return StartCoroutine(DisplayAndWaitForChoices(options, results));
+        Debug.Log("chosen option is "+chosenOption);
 
         //then perform these
         if (chosenOption == "1a"){
-            // save.Add("1a");
+            // save.Add("1a"); 
             Jump("route 1");
         } else {
             // save.Add("1b");
             Jump("label happy");
-        } 
+        }
+
     }
 
     // ==============================================================
@@ -128,13 +122,29 @@ public class CommandsController : MonoBehaviour
         // state = State.Inactive;
     }
 
+    //displays the choices and waits for user input
+    private IEnumerator DisplayAndWaitForChoices(List<string> options, List<string> results) {
+        chosenOption = null;
+        StartCoroutine(DisplayChoicesAfter(options, results));
+        //wait for user input
+        while(chosenOption == null){
+            yield return null;
+        }
+
+        yield return StartCoroutine(PlayChosenOptionAnimation());
+        //allow continue (maybe should be placed in func1()???)
+        ds.PlayerChoseAnOption();
+
+    }
+
     // TODO
     //choices = what is displayed on screen
     //result = items to be added to inventory
-    public void DisplayChoices(List<string> choices, List<string> results){
-        chosenOption = null;
-        StartCoroutine(DisplayChoicesAfter(choices, results));
-    }
+    // public void DisplayChoices(List<string> choices, List<string> results){
+    //     chosenOption = null;
+    //     //displays the choices only when the prompt has been fully written
+    //     StartCoroutine(DisplayChoicesAfter(choices, results));
+    // }
 
     public void Jump(string toJumpTo){
         // state = State.Inactive;
@@ -145,6 +155,11 @@ public class CommandsController : MonoBehaviour
     // ========= YOU DONT NEED TO EDIT THEM (unless to fix stuff) =================
     // ===================== PROCEED WITH CAUTION ! ===========================
     // ====================================================================
+
+    public IEnumerator PlayChosenOptionAnimation(){
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("finished playing the animation");
+    }
 
     //use reflection to invoke methods
     public void AlisterInvoke(Job job){
@@ -189,12 +204,12 @@ public class CommandsController : MonoBehaviour
     }
 
     //displays the choices only when the question has been fully displayed
-    private IEnumerator DisplayChoicesAfter(List<string> choices, List<string> results) {
+    private IEnumerator DisplayChoicesAfter(List<string> options, List<string> results) {
         //wait until question has been fully displayed, then display the choices
         while(ds.LettersStillDisplaying() == true){
             yield return null;
         }
-        ds.DisplayChoices(choices, results);
+        ds.DisplayChoices(options, results);
     }
 
     //external option menu will send the response back to here with this func
@@ -244,6 +259,10 @@ public class CommandsController : MonoBehaviour
     public bool ReadyToContinue(){
         //todo account for animations that play as dialogue plays
         return queue.remaining == 0;
+    }
+
+    public bool HasChosenOption(){
+        return chosenOption!=null;
     }
 
     private object[] ParseArgs(string func, string argsToParse){
@@ -351,17 +370,11 @@ public class CommandsController : MonoBehaviour
         public string name;
         public object[] args;
         public State state;
-        public double timer;
 
         public Job(string in_name, object[] in_args){
             name=in_name;
             args=in_args;
             state = State.Active;
-            timer=0;
-        }
-
-        public void UpdateTimer(){
-            timer += Time.deltaTime;
         }
 
         public void SetInactive(){

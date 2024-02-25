@@ -11,6 +11,7 @@ public class SavedInformation : MonoBehaviour
     void Start(){
         routeInfo = new Dictionary<string, int>();
         inventory = new Dictionary<string, int>();
+
     }
 
     //adds the item to the inventory
