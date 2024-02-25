@@ -33,11 +33,11 @@ public class SavedInformation : MonoBehaviour
     }
 
     //adds the route key to the route dict
-    public void AddRouteInfo(string routeKey, int amount){
+    public void AddRouteFlag(string routeKey){
         if (inventory.ContainsKey(routeKey)){
-            inventory[routeKey] += amount;
+            inventory[routeKey] += 1;
         } else {
-            inventory[routeKey] = amount;
+            inventory[routeKey] = 1;
         }
     }
 

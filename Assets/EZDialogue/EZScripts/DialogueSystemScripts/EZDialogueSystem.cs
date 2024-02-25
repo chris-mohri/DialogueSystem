@@ -219,11 +219,6 @@ public class EZDialogueSystem : MonoBehaviour
             if (!commandController.ReadyToContinue()){
                 SkipCommands();
             }
-            if (displayingChoices==true){
-                //check bounding boxes
-            }
-
-
         }
         // Debug.Log(textObj.text);
         // Debug.Log(textObj.textInfo.characterCount);

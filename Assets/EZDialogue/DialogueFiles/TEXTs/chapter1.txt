@@ -8,7 +8,7 @@
 
 .label happy
 	Aoko .say \n\n"To be honest, I didn't really want to leave it to Tobimaru like this."
-	#.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1, fade=true)
+	#.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1)
 	.voice Aoko/chapter1/part1.mp3
 
 	.say A hot, earthenware pot sat on the table.

@@ -80,18 +80,17 @@ public class CommandsController : MonoBehaviour
     //chapter 1 func
     public IEnumerator func1(){
         //ask for input
-        List<string> options = new List<string>(){"Aoko, you speak too much", "Stay silent"};
+        List<string> options = new List<string>(){"\"Aoko, you speak too much\"", "Stay silent"};
         List<string> results = new List<string>(){"1a", "1b"};
 
         yield return StartCoroutine(DisplayAndWaitForChoices(options, results));
-        Debug.Log("chosen option is "+chosenOption);
 
         //then perform these
         if (chosenOption == "1b"){
-            // save.Add("1a"); 
+            save.AddRouteFlag("1b"); 
             Jump(".route 1b");
         } else {
-            // save.Add("1b");
+            save.AddRouteFlag("1b");
             Jump(".label happy");
         }
 
@@ -102,9 +101,26 @@ public class CommandsController : MonoBehaviour
     // MAKE THEM PUBLIC!!
     // ======================== Base Scripts ========================
 
-    //moves the in-game object named <obj> by x and y from starting after <twait> seconds have
-    //initially passed, and will take <tTravel> seconds to fully move x and y
-    public IEnumerator Move(string obj, int xTravel, int yTravel, float tWait, float tTravel, bool skippable){
+    public void Spawn(string objName, int x, int y, float tWait, bool fadeIn){
+        
+    }
+
+    //waits <twait> seconds, then moves the in-game object named <obj> by x and y, and
+    //will take <tTravel> seconds to fully move by x and y
+    public IEnumerator Move(string objName, int xTravel, int yTravel, float tWait, float tTravel){
+        yield return new WaitForSeconds(tWait);
+        Debug.Log("placeholder");
+    }
+
+    //save as above but continues movement while player is continuing dialogue
+    public IEnumerator PersistMove(string objName, int xTravel, int yTravel, float tWait, float tTravel){
+        yield return new WaitForSeconds(tWait);
+        Debug.Log("placeholder");
+    }
+
+    //waits <twait> seconds, then moves the in-game object named <obj> to x and y, and
+    //will take <tTravel> seconds to fully move to x and y 
+    public IEnumerator MoveTo(string objName, int x, int y, float tWait, float tTravel){
         yield return new WaitForSeconds(tWait);
         Debug.Log("placeholder");
     }
@@ -209,18 +225,32 @@ public class CommandsController : MonoBehaviour
 
     //invokes the coroutine and manages queue counter
     private IEnumerator InvokedCoroutine(MethodInfo func, object[] args) {
-        //invoke it
-        yield return StartCoroutine((IEnumerator)func.Invoke(this, args));
-        //decrement active remaining jobs in queue
-        queue.remaining--;
+        //check if it is a persist function or not.
+        //persist function = a type of func that allows the player to start new dialogue while this func is still executing
+        string funcName = func.Name;
+
+        if (funcName.IndexOf("Persist")==0){
+            queue.remaining--;
+            yield return StartCoroutine((IEnumerator)func.Invoke(this, args));
+        } else {
+            yield return StartCoroutine((IEnumerator)func.Invoke(this, args)); //invoke it
+            queue.remaining--; //decrement active remaining jobs in queue
+        }
     }
 
     //invokes the normal function and manages queue counter
     private void InvokedNormalFunction(MethodInfo func, object[] args) {
-        //invoke it
-        func.Invoke(this, args);
-        //decrement active remaining jobs in queue
-        queue.remaining--;
+        //check if it is a persist function or not.
+        //persist function = a type of func that allows the player to start new dialogue while this func is still executing
+        string funcName = func.Name;
+
+        if (funcName.IndexOf("Persist")==0){
+            queue.remaining--;
+            func.Invoke(this, args);
+        } else {
+            func.Invoke(this, args);//invoke it
+            queue.remaining--;//decrement active remaining jobs in queue
+        }
     }
 
     //displays the choices only when the question has been fully displayed
