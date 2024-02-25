@@ -232,11 +232,22 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    //allows the player to continue, and removes the color tags from the dialogue options
     public void PlayerChoseAnOption(){
         canContinue = true;
         displayingChoices = false;
+
+        //remove the color from the options
+        int index = textObj.text.IndexOf("<link=$opt_");
+        while (index!=-1){
+            int l = FindIndexOfTagBefore(index);
+            int r = FindIndexOfTagAfter(index)+7;
+            string tagToRemove = textObj.text.Substring(l, r-l);
+            RemoveTag(l, tagToRemove);
+            index = textObj.text.IndexOf("<link=$opt_");
+        }
+        
     }
-    
 
     //displays choices 
     public void DisplayChoices(List<string> choices, List<string> result){
@@ -398,7 +409,7 @@ public class EZDialogueSystem : MonoBehaviour
                         //mark for removal
                         if (newHex=="FF"){
                             toRemove = index;
-                            newHex="00";
+                           // newHex="00";
                         }
                         //replace the old tag with the new tag
                         textObj.text = textObj.text.Replace(oldTag, newTag);
@@ -408,7 +419,7 @@ public class EZDialogueSystem : MonoBehaviour
             }
             //remove the 100% alpha tag (since it is useless)
             if (toRemove != -1){
-                RemoveTag(toRemove, "<alpha=#00><link=$fade$></link>");
+                RemoveTag(toRemove, "<alpha=#FF><link=$fade$></link>");
             }
 
             fadeTimer = 0.0f;
@@ -582,6 +593,13 @@ public class EZDialogueSystem : MonoBehaviour
             Debug.Log("RemoveTag() Error: Invalid Index When Removing Tag");
             return;
         }
+
+        //checks if the string here is actually the tag to be removed
+        if (textObj.text.Substring(index, tag.Length)!=tag){
+            Debug.Log($"Tag to remove ({tag}) was not found at the given index ({index})");
+            return;
+        }
+
         // Debug.Log(index+" | "+tag +" | "+textObj.text.Substring(index, tag.Length));
         textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
@@ -591,6 +609,25 @@ public class EZDialogueSystem : MonoBehaviour
         RemoveTag(index, oldTag);
         AddTag(index, newTag);
         // textObj.ForceMeshUpdate(); //?
+    }
+
+    private int FindIndexOfTagBefore(int index){
+        for (int i = index-1; i>=0; i--){
+            if (textObj.text[i]=='<'){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int FindIndexOfTagAfter(int index){
+        //find index of tag after this one
+        for (int i = index+1; i<textObj.text.Length; i++){
+            if (textObj.text[i]=='<'){
+                return i;
+            }
+        }
+        return -1;
     }
 
     //checks if 6-character sequence is valid hex

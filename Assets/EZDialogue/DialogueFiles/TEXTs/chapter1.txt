@@ -5,6 +5,7 @@
 	#.func Move(Aoko, x, y, t1, t2)
 
 	.say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.
+	.func func1()
 
 .label happy
 	Aoko .say \n\n"To be honest, I didn't really want to leave it to Tobimaru like this."
@@ -12,7 +13,6 @@
 	.voice Aoko/chapter1/part1.mp3
 
 	.say A hot, earthenware pot sat on the table.
-	.func func1()
 
 	.say Aoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.
 
