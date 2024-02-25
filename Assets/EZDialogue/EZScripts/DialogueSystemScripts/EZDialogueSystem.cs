@@ -37,10 +37,10 @@ public class EZDialogueSystem : MonoBehaviour
     private int alphaIncrement = 5;
     //starting alpha value of the newest letter that is displayed (keep at 10 since
     //  since the length must stay as 11)
-    private string aTag1 = "<alpha=#10><link=fade></link>"; //11 length
+    private string aTag1 = "<alpha=#10><link=$fade$></link>"; //11 length
     //dim tag (previously displayed sentences are dimmed)
-    private string dimTag = "<color=#aaaaaa><link=dim></link><alpha=#b8><link=dim></link>";
-    private string undimTag = "<color=#ffffff><link=undim></link><alpha=#ff><link=undim></link>";
+    private string dimTag = "<color=#aaaaaa><link=$dim$></link><alpha=#b8><link=$dim$></link>";
+    private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     //set as 11
     private int aTagLength;
@@ -166,6 +166,8 @@ public class EZDialogueSystem : MonoBehaviour
 
         //update timer
         HandleTimer();
+
+        // Debug.Log(textObj.text);
     }
 
     //gets called every frame
@@ -232,7 +234,7 @@ public class EZDialogueSystem : MonoBehaviour
 
     
 
-    //displays choices
+    //displays choices 
     public void DisplayChoices(List<string> choices, List<string> result){
         canContinue = false;
         displayingChoices = true; 
@@ -242,10 +244,10 @@ public class EZDialogueSystem : MonoBehaviour
         string left="";
         for (int i = 0; i<choices.Count; i++){
             int num = i+1;
-            left = "<link="+result[i]+"><color=#ffffff>"+aTag1+num+".   ";
+            left = "<color=#ffffff>"+"<link=$opt_"+result[i]+"$></link>"+aTag1+"<link="+result[i]+">"+num+".   ";
             middle = choices[i]+"</link>";
             text+= left+middle+"\n";
-        }
+        } //__s
         text+="\n";
 
         //add the text
@@ -268,7 +270,7 @@ public class EZDialogueSystem : MonoBehaviour
             //if there's enough room for an alpha tag
             if (index+aTagLength<=textObj.text.Length-1) {
                 //if there is indeed an alpha tag here and it is a fade tag
-                if (GetTagId(index)=="fade"){
+                if (GetTagId(index)=="$fade$"){
                     textObj.text = textObj.text.Remove(index, aTagLength);
                 }
             }
@@ -375,8 +377,9 @@ public class EZDialogueSystem : MonoBehaviour
                 //if there's enough letters to possibly house another alpha tag, then continue
                 if (index+aTagLength<=currentTextLength-1) {
                     //if there is an alpha tag here and it is a fade tag
-                    if (GetTagId(index)=="fade"){
+                    if (GetTagId(index)=="$fade$"){
                     // if (GetTag(index)=="alpha" && GetTagId(index)=="fade"){
+                        // Debug.Log("ALTS: "+textObj.text.Substring(index, aTagLength));
                         string oldTag = textObj.text.Substring(index, aTagLength);
                         //get the new tag e.g. <alpha=#99>
                         string hex = oldTag.Substring(8, 2);
@@ -387,7 +390,7 @@ public class EZDialogueSystem : MonoBehaviour
                         } else {
                             newHex = AddPercentToHex(hex, alphaIncrement);
                         }
-                        string newTag = $"<alpha=#{newHex}><link=fade></link>";
+                        string newTag = $"<alpha=#{newHex}><link=$fade$></link>";
                         //mark for removal
                         if (newHex=="FF"){
                             toRemove = index;
@@ -401,7 +404,7 @@ public class EZDialogueSystem : MonoBehaviour
             }
             //remove the 100% alpha tag (since it is useless)
             if (toRemove != -1){
-                RemoveTag(toRemove, "<alpha=#00><link=fade></link>");
+                RemoveTag(toRemove, "<alpha=#00><link=$fade$></link>");
             }
 
             fadeTimer = 0.0f;
@@ -458,13 +461,25 @@ public class EZDialogueSystem : MonoBehaviour
         }
     }
 
-    //<link=1a><color=#aaaaaa><l></l>1. hi there</link>
+    //__s
+    //<link=><color=#ffffff><link=choice_option_color></link>
+    //<link=1a><color=#aaaaaa><l></l><alpha>1. hi there</link>
     public void ChangeOptionColor(string id, string color){
-        string newColor = "<link="+id+">";
-        int indexOfLink = textObj.text.IndexOf(newColor);
-        string toReplace = textObj.text.Substring(indexOfLink, 22+id.Length);
-        newColor = "<link="+id+">"+"<color=#"+color+">";
-        textObj.text = textObj.text.Replace(toReplace, newColor);
+        // return;
+
+        string oldColor = "<color=#ffffff><link=$opt_"+id+"$></link>";
+        int indexOfLink = textObj.text.IndexOf(oldColor);
+        if (indexOfLink==-1) {
+            oldColor = "<color=#"+hoverColor+"><link=$opt_"+id+"$></link>";
+            indexOfLink = textObj.text.IndexOf(oldColor);
+        }
+        if (indexOfLink==-1) return;
+
+        // Debug.Log("COC: "+textObj.text.Substring(indexOfLink, 22+id.Length));
+        // string toReplace = textObj.text.Substring(indexOfLink, 22+id.Length);
+        string newColor = "<color=#"+color+"><link=$opt_"+id+"$></link>";
+        // textObj.text = textObj.text.Replace(toReplace, newColor);
+        ReplaceTag(indexOfLink, oldColor, newColor);
     }
 
 
@@ -539,7 +554,7 @@ public class EZDialogueSystem : MonoBehaviour
             //         //if there's enough room for an alpha tag
             //         if (i+aTagLength<=textObj.text.Length-1) { 
             //             //if there is indeed an alpha tag here and it is a fade tag
-            //             if (textObj.text.Substring(i, 6)=="<alpha" && GetTagId(i)=="fade"){
+            //             if (textObj.text.Substring(i, 6)=="<alpha" && GetTagId(i)=="$fade$"){
             //                 textObj.text = textObj.text.Remove(i, aTagLength);
             //             }
             //         }
@@ -555,13 +570,23 @@ public class EZDialogueSystem : MonoBehaviour
     //removes the tag at the given index
     private void RemoveTag(int index, string tag){
         textObj.ForceMeshUpdate();
-        if (index>=textObj.text.Length){
-            Debug.Log("Invalid Index When Removing Tag");
+        if (textObj.text[index]!='<'){
+            Debug.Log("RemoveTag() Error: Not a tag");
             return;
         }
-        Debug.Log(index+" | "+tag +" | "+textObj.text.Substring(index, tag.Length));
+        if (index>=textObj.text.Length){
+            Debug.Log("RemoveTag() Error: Invalid Index When Removing Tag");
+            return;
+        }
+        // Debug.Log(index+" | "+tag +" | "+textObj.text.Substring(index, tag.Length));
         textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
+    }
+
+    private void ReplaceTag(int index, string oldTag, string newTag){
+        RemoveTag(index, oldTag);
+        AddTag(index, newTag);
+        // textObj.ForceMeshUpdate(); //?
     }
 
     //checks if 6-character sequence is valid hex
