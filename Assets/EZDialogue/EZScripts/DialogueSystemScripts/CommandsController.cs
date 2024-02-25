@@ -87,12 +87,12 @@ public class CommandsController : MonoBehaviour
         Debug.Log("chosen option is "+chosenOption);
 
         //then perform these
-        if (chosenOption == "1a"){
+        if (chosenOption == "1b"){
             // save.Add("1a"); 
-            Jump("route 1");
+            Jump(".route 1b");
         } else {
             // save.Add("1b");
-            Jump("label happy");
+            Jump(".label happy");
         }
 
     }
@@ -134,17 +134,40 @@ public class CommandsController : MonoBehaviour
 
     }
 
-    // TODO
-    //choices = what is displayed on screen
-    //result = items to be added to inventory
-    // public void DisplayChoices(List<string> choices, List<string> results){
-    //     chosenOption = null;
-    //     //displays the choices only when the prompt has been fully written
-    //     StartCoroutine(DisplayChoicesAfter(choices, results));
-    // }
+    //jumps to the given route or label
+    public void Jump(string dest){
+        dest = dest.Trim();
+        if (dest[0]!='.'){
+            dest = "."+dest;
+        }
 
-    public void Jump(string toJumpTo){
-        // state = State.Inactive;
+        //gets whether it is a .route or .label that is being jumped to
+        string type;
+        if (dest.IndexOf(".route")==0){
+            type=".route";
+        } else if (dest.IndexOf(".label")==0){
+            type=".label";
+        } else {
+            throw new Exception("Invalid jump type (must be .route or .label) when attempting to jump to "+dest);
+        }
+
+        string name = dest.Substring(type.Length).Trim();
+
+        string[] lines = ds.GetBookLines();
+        string line;
+        for(int i = 0; i<lines.Length; i++){
+            line = lines[i].Trim();
+            
+            //if the line is the correct type (.route or .label)
+            if (line.IndexOf(type)==0){
+                //if it is the correct destination
+                if (line.Substring(type.Length).Trim() == name){
+                    ds.SetPointer(i);
+                    return;
+                }
+            }
+        }
+        throw new Exception("Destination not found when jumping to "+dest);
     }
 
     // ====================================================================

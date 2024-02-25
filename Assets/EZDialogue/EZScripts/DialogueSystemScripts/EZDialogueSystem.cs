@@ -27,7 +27,7 @@ public class EZDialogueSystem : MonoBehaviour
     private bool canContinue = true; //if the player can continue to the next entry
     private bool moreLettersToDisplay=false;//true if the letters of the current entry are still being displayed 1 by 1, false if finished
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
-    public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+    private Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
 
 
     // === variables below here are not needed to be saved in save files ===
@@ -650,6 +650,14 @@ public class EZDialogueSystem : MonoBehaviour
         return false;
     }
 
+    public string[] GetBookLines(){
+        return book.GetLines();
+    }
+
+    //asdf
+    public void SetPointer(int p){
+        book.SetPointer(p);
+    }
 
 // ============== INNER CLASSES =========================================
 
@@ -674,13 +682,6 @@ public class EZDialogueSystem : MonoBehaviour
         public string voice;
         public string label;
 
-        //example 
-        /*
-        .swap Aoko Aoko_happy
-            swaps the sprite of the gameObject with the name "Aoko" to "Aoko_happy"
-        .move Aoko left 100 2
-            moves gameObject with the name "Aoko" to the left 100 pixels within 2 seconds
-        */
         public DialogueEntry(){
             route="";
             name="";
@@ -791,6 +792,12 @@ public class EZDialogueSystem : MonoBehaviour
         }
 
         public virtual void Export(){
+        }
+
+        public virtual string[] GetLines(){
+            return null;
+        }
+        public virtual void SetPointer(int p){
         }
 
     }
@@ -1229,11 +1236,11 @@ public class EZDialogueSystem : MonoBehaviour
             }
         }
 
-        public string[] GetLines(){
+        public override string[] GetLines(){
             return lines;
         }
 
-        public void SetPointer(int i){
+        public override void SetPointer(int i){
             pointer=i;
         }
 

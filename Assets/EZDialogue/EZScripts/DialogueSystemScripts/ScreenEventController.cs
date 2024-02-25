@@ -16,9 +16,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private GameObject DialogueObject;
 
     private Camera camera; 
-
     private RectTransform textRectTransform;
-
     private TMP_Text textbox;
     private Canvas canvas;
 
@@ -74,7 +72,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
             if(link!=-1){     
                 TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
                 string linkId = linkInfo.GetLinkID();
-                
+
                 //only change the color when necessary
                 if (previouslyHoveredLink==-1){
                     ds.ChangeOptionColor(linkId, ds.hoverColor);

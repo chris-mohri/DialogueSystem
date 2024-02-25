@@ -43,6 +43,8 @@
 	#displays to the screen 
 	.func func1()
 
+	.say Shouldn't reach here ever
+
 	
 .route 1b
 	Aoko .say "Staying silent, Alice?"
