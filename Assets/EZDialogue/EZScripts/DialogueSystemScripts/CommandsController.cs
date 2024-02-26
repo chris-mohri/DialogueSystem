@@ -102,7 +102,7 @@ public class CommandsController : MonoBehaviour
     // ======================== Base Scripts ========================
 
     public void Spawn(string objName, int x, int y, float tWait, bool fadeIn){
-        
+
     }
 
     //waits <twait> seconds, then moves the in-game object named <obj> by x and y, and
@@ -144,9 +144,12 @@ public class CommandsController : MonoBehaviour
             yield return null;
         }
 
+        ds.PlayerChoseAnOption();
+
         yield return StartCoroutine(PlayChosenOptionAnimation());
         //allow continue (maybe should be placed in func1()???)
-        ds.PlayerChoseAnOption();
+        
+        ds.ReturnControlAfterChoice();
 
     }
 

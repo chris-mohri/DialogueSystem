@@ -231,9 +231,6 @@ public class EZDialogueSystem : MonoBehaviour
 
     //allows the player to continue, and removes the color tags from the dialogue options
     public void PlayerChoseAnOption(){
-        canContinue = true;
-        displayingChoices = false;
-
         //remove the color from the options
         int index = textObj.text.IndexOf("<link=$opt_");
         while (index!=-1){
@@ -243,9 +240,12 @@ public class EZDialogueSystem : MonoBehaviour
             RemoveTag(l, tagToRemove);
             index = textObj.text.IndexOf("<link=$opt_");
         }
+    }
 
+    public void ReturnControlAfterChoice(){
+        canContinue = true;
+        displayingChoices = false;
         forceContinue=true;
-        
     }
 
     //displays choices 
@@ -272,7 +272,18 @@ public class EZDialogueSystem : MonoBehaviour
 
         if (textObj.isTextOverflowing){
             //clear current text and set as new text
-            ClearTextThenAdd(text);
+            // ClearTextThenAdd(text);
+            textObj.text = text;
+            textObj.ForceMeshUpdate();
+            if (textObj.isTextOverflowing){
+                textObj.text = "Current line is too big to display on the screen. Consider making it smaller.";
+                textObj.ForceMeshUpdate();
+            }
+            // textObj.maxVisibleCharacters = 0;
+            // currentCharIndex = 0;
+            textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
+            currentCharIndex = textObj.text.Length;
+            undimTagIndex=-1;
         }
     }
 
@@ -596,7 +607,6 @@ public class EZDialogueSystem : MonoBehaviour
             Debug.Log($"Tag to remove ({tag}) was not found at the given index ({index})");
             return;
         }
-
         // Debug.Log(index+" | "+tag +" | "+textObj.text.Substring(index, tag.Length));
         textObj.text = textObj.text.Remove(index, tag.Length);
         currentCharIndex-=tag.Length;        
