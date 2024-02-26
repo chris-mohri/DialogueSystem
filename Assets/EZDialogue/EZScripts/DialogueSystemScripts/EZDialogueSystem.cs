@@ -49,8 +49,10 @@ public class EZDialogueSystem : MonoBehaviour
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     private int aTagLength; //set as 11
-    [SerializeField] [Tooltip("(Default: ddffff) Hex color for hovering over choice options")]
-    public string hoverColor = "ddffff";
+    [SerializeField] [Tooltip("(Default: ddffff) Font for hovering over choice options")]
+    public string hoverFont = "VarelaRound2";
+    [SerializeField] [Tooltip("(Default: ddffff) Normal font")]
+    public string normalFont = "VarelaRound1";
 
     // ------------------- keeps track of time -------------------
     private double currentTime = 0.0f;
@@ -85,10 +87,10 @@ public class EZDialogueSystem : MonoBehaviour
         }
 
         //check if public variables are valid
-        if (!IsValidHex(hoverColor)){
-            hoverColor = "ddffff";
-            Debug.Log("Hover color is not valid hexadecimal. (you should omit the # if you had one)");
-        }
+        // if (!IsValidHex(hoverFont)){
+        //     hoverFont = "VarelaRound2";
+        //     Debug.Log("Hover color is not valid hexadecimal. (you should omit the # if you had one)");
+        // }
 
         //setup connection with other components
         save = GetComponent<SavedInformation>();
@@ -258,7 +260,7 @@ public class EZDialogueSystem : MonoBehaviour
         string left="";
         for (int i = 0; i<choices.Count; i++){
             int num = i+1;
-            left = "<color=#ffffff>"+"<link=$opt_"+result[i]+"$></link>"+aTag1+"<link="+result[i]+">"+num+".   ";
+            left = "<font=\""+normalFont+"\"><link=$opt_"+result[i]+"$></link>"+aTag1+"<link="+result[i]+">"+num+".   ";
             middle = choices[i]+"</link>";
             text+= left+middle+"\n";
         } //__s
@@ -487,22 +489,17 @@ public class EZDialogueSystem : MonoBehaviour
     //__s
     //<link=><color=#ffffff><link=choice_option_color></link>
     //<link=1a><color=#aaaaaa><l></l><alpha>1. hi there</link>
-    public void ChangeOptionColor(string id, string color){
+    public void ChangeOptionColor(string id, string fontName){
         // return;
+        Debug.Log(id);
+        int index = textObj.text.IndexOf("<link=$opt_"+id);
+        int l = FindIndexOfTagBefore(index);
+        int r = FindIndexOfTagAfter(index)+7;
+        if (l < 0 || r-l<0) return;
+        string fontToRemove = textObj.text.Substring(l, r-l);
 
-        string oldColor = "<color=#ffffff><link=$opt_"+id+"$></link>";
-        int indexOfLink = textObj.text.IndexOf(oldColor);
-        if (indexOfLink==-1) {
-            oldColor = "<color=#"+hoverColor+"><link=$opt_"+id+"$></link>";
-            indexOfLink = textObj.text.IndexOf(oldColor);
-        }
-        if (indexOfLink==-1) return;
-
-        // Debug.Log("COC: "+textObj.text.Substring(indexOfLink, 22+id.Length));
-        // string toReplace = textObj.text.Substring(indexOfLink, 22+id.Length);
-        string newColor = "<color=#"+color+"><link=$opt_"+id+"$></link>";
-        // textObj.text = textObj.text.Replace(toReplace, newColor);
-        ReplaceTag(indexOfLink, oldColor, newColor);
+        string newFont = "<font=\""+fontName+"\"><link=$opt_"+id+"$></link>";
+        ReplaceTag(l, fontToRemove, newFont);
     }
 
 

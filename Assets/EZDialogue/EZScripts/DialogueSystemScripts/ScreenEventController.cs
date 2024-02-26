@@ -75,15 +75,15 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 
                 //only change the color when necessary
                 if (previouslyHoveredLink==-1){
-                    ds.ChangeOptionColor(linkId, ds.hoverColor);
+                    ds.ChangeOptionColor(linkId, ds.hoverFont);
                 } else if (previouslyHoveredLink!=link){
-                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
-                    ds.ChangeOptionColor(linkId, ds.hoverColor);
+                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
+                    ds.ChangeOptionColor(linkId, ds.hoverFont);
                 }
                 previouslyHoveredLink = link;
             } else {
                 if (previouslyHoveredLink!=-1){
-                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), "ffffff");
+                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
                 }
                 previouslyHoveredLink=-1;
             }
