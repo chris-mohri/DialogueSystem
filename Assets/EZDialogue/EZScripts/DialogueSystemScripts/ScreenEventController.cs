@@ -49,7 +49,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
             int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
             if(link!=-1){
                 TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
-                Debug.Log("Clicked: "+linkInfo.GetLinkID());
+                // Debug.Log("Clicked: "+linkInfo.GetLinkID()); 
                 commandsController.SendChosenOption(linkInfo.GetLinkID());
             }
         }

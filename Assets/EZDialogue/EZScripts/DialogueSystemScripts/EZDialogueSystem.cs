@@ -230,20 +230,27 @@ public class EZDialogueSystem : MonoBehaviour
         //display the letters
         AddLettersToScreen();
     }
-
-    //allows the player to continue, and removes the color tags from the dialogue options
-    public void PlayerChoseAnOption(){
+/*
+<font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
+*/
+    //removes the color tags from the dialogue options
+    public void PlayerChoseAnOption(string chosenOption){
         //remove the color from the options
         int index = textObj.text.IndexOf("<link=$opt_");
         while (index!=-1){
             int l = FindIndexOfTagBefore(index);
             int r = FindIndexOfTagAfter(index)+7;
             string tagToRemove = textObj.text.Substring(l, r-l);
+            //remove the option text as well for the unselected options 
+            if (tagToRemove.IndexOf("$opt_"+chosenOption+"$")==-1){
+                int closeTag = textObj.text.IndexOf("</link>", r)+7;
+                tagToRemove = textObj.text.Substring(l, closeTag-l);
+            }
             RemoveTag(l, tagToRemove);
             index = textObj.text.IndexOf("<link=$opt_");
         }
     }
-
+    //allows the player to continue
     public void ReturnControlAfterChoice(){
         canContinue = true;
         displayingChoices = false;
@@ -491,7 +498,7 @@ public class EZDialogueSystem : MonoBehaviour
     //<link=1a><color=#aaaaaa><l></l><alpha>1. hi there</link>
     public void ChangeOptionColor(string id, string fontName){
         // return;
-        Debug.Log(id);
+        // Debug.Log(id);
         int index = textObj.text.IndexOf("<link=$opt_"+id);
         int l = FindIndexOfTagBefore(index);
         int r = FindIndexOfTagAfter(index)+7;

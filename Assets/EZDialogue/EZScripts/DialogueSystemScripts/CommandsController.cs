@@ -144,7 +144,7 @@ public class CommandsController : MonoBehaviour
             yield return null;
         }
 
-        ds.PlayerChoseAnOption();
+        ds.PlayerChoseAnOption(chosenOption);
 
         yield return StartCoroutine(PlayChosenOptionAnimation());
         //allow continue (maybe should be placed in func1()???)
@@ -160,7 +160,7 @@ public class CommandsController : MonoBehaviour
             dest = "."+dest;
         }
 
-        //gets whether it is a .route or .label that is being jumped to
+        //gets whether it is a .route or .label that is being jumped to 
         string type;
         if (dest.IndexOf(".route")==0){
             type=".route";
