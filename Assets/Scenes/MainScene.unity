@@ -557,7 +557,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: '1. choice A
+
+    <font="VarelaRound2">2. choice B'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
   m_sharedMaterial: {fileID: -6704820290539167338, guid: b66da1130b4dbac4ca697e373913857d, type: 2}
