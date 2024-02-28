@@ -232,6 +232,8 @@ public class EZDialogueSystem : MonoBehaviour
     }
 /*
 <font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
+1. choice A
+<font="VarelaRound2>2. choice B
 */
     //removes the color tags from the dialogue options
     public void PlayerChoseAnOption(string chosenOption){
