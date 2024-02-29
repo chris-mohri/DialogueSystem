@@ -13,11 +13,13 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private CommandsController commandsController;
 
     [SerializeField]
+    private GameObject UnderlineObject;
+    [SerializeField]
     private GameObject DialogueObject;
 
     private Camera camera; 
     private RectTransform textRectTransform;
-    private TMP_Text textbox;
+    private TMP_Text textObj;
     private Canvas canvas;
 
     private int previouslyHoveredLink;
@@ -28,7 +30,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         previouslyHoveredLink = -1;
 
         ds = GetComponent<EZDialogueSystem>();
-        textbox = DialogueObject.GetComponent<TMP_Text>();
+        textObj = DialogueObject.GetComponent<TMP_Text>();
         canvas = GetComponentInParent<Canvas>();
         textRectTransform = DialogueObject.GetComponent<RectTransform>();
         commandsController = GetComponent<CommandsController>();
@@ -46,9 +48,9 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         //only continue if the user hasn't chosen an option yet
         if (commandsController.HasChosenOption()==false){
             //check if a choice option was clicked
-            int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
+            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, camera);
             if(link!=-1){
-                TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
+                TMP_LinkInfo linkInfo = textObj.textInfo.linkInfo[link];
                 // Debug.Log("Clicked: "+linkInfo.GetLinkID()); 
                 commandsController.SendChosenOption(linkInfo.GetLinkID());
             }
@@ -68,26 +70,58 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         //only continue if the user hasn't chosen an option yet
         if (commandsController.HasChosenOption()==false){
             //check if hovering over a choice option
-            int link = TMP_TextUtilities.FindIntersectingLink(textbox, mousePosition, camera);
+            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, camera);
             if(link!=-1){     
-                TMP_LinkInfo linkInfo = textbox.textInfo.linkInfo[link];
+                TMP_LinkInfo linkInfo = textObj.textInfo.linkInfo[link];
                 string linkId = linkInfo.GetLinkID();
 
                 //only change the color when necessary
                 if (previouslyHoveredLink==-1){
                     ds.ChangeOptionColor(linkId, ds.hoverFont);
+                    DisplayUnderline(linkId);
+                    //add here
                 } else if (previouslyHoveredLink!=link){
-                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
+                    ds.ChangeOptionColor(textObj.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
                     ds.ChangeOptionColor(linkId, ds.hoverFont);
+                    DisplayUnderline(linkId);
+                    //add here
                 }
                 previouslyHoveredLink = link;
             } else {
+                //if not hovering over any option, make sure no option has hover effect
                 if (previouslyHoveredLink!=-1){
-                    ds.ChangeOptionColor(textbox.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
+                    ds.ChangeOptionColor(textObj.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
                 }
                 previouslyHoveredLink=-1;
             }
         }
+    }
+
+/*
+<font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
+1. choice A
+<font="VarelaRound2>2. choice B
+*/
+
+    private void DisplayUnderline(string id){
+        textObj.ForceMeshUpdate();
+        Debug.Log(id);
+
+        //finds the charInfo of the letter whose coordinates we need
+        int tagIndex = textObj.text.IndexOf($"<link={id}>");
+        int closeTagIndex = textObj.text.IndexOf("</link>", tagIndex);
+        int letterIndex = closeTagIndex-1;
+        TMP_CharacterInfo charInfo;
+        charInfo = textObj.textInfo.characterInfo[letterIndex];
+        // Debug.Log(charInfo.bottomLeft.x);
+        Debug.Log(textObj.GetTextInfo(textObj.text).characterInfo[letterIndex].bottomLeft.y);
+        Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y, 0f);
+        Vector3 worldPosition = textObj.transform.TransformPoint(localPosition);
+        Vector3 bottomLeft = charInfo.bottomLeft;
+        // Debug.Log(worldPosition);
+        // Debug.Log(bottomLeft);
+        worldPosition.z = -0.1f;
+        UnderlineObject.GetComponent<Transform>().position = worldPosition;
     }
 
     void Update(){

@@ -4,10 +4,10 @@
 	#.func Spawn(Aoko, x, y, t1)
 	#.func Move(Aoko, x, y, t1, t2)
 
-	.say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.
+	.say \n\nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.\n\n
 
 .label happy
-	Aoko .say \n\n"To be honest, I didn't really want to leave it to Tobimaru like this."
+	Aoko .say "To be honest, I didn't really want to leave it to Tobimaru like this."
 	#.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1)
 	.voice Aoko/chapter1/part1.mp3
 	.func func1()

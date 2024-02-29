@@ -236,20 +236,33 @@ public class EZDialogueSystem : MonoBehaviour
 1. choice A
 <font="VarelaRound2>2. choice B
 */
-    //removes the color tags from the dialogue options
+    //removes the font and link tags from the dialogue options while also deleting the unchosen options' text
     public void PlayerChoseAnOption(string chosenOption){
         //remove the color from the options
         int index = textObj.text.IndexOf("<link=$opt_");
         while (index!=-1){
+            bool removeResidualTag = false;
             int l = FindIndexOfTagBefore(index);
             int r = FindIndexOfTagAfter(index)+7;
-            string tagToRemove = textObj.text.Substring(l, r-l);
-            //remove the option text as well for the unselected options 
+            string tagToRemove = textObj.text.Substring(l, r-l); //removes the font tag
+
+            //remove the link and option text as well for the unselected options 
             if (tagToRemove.IndexOf("$opt_"+chosenOption+"$")==-1){
                 int closeTag = textObj.text.IndexOf("</link>", r)+7;
                 tagToRemove = textObj.text.Substring(l, closeTag-l);
+            } else { //else just remove the other link tag
+                removeResidualTag = true;
+                tagToRemove = textObj.text.Substring(l, r+7+chosenOption.Length-l);
             }
             RemoveTag(l, tagToRemove);
+
+            //if removed only the other link tag, also remove the closing link tag
+            if (removeResidualTag){
+                int residualTag = textObj.text.IndexOf("</link>", l);
+                tagToRemove = textObj.text.Substring(residualTag, 7);
+                RemoveTag(residualTag, tagToRemove);
+            }
+            
             index = textObj.text.IndexOf("<link=$opt_");
         }
     }
@@ -601,7 +614,7 @@ public class EZDialogueSystem : MonoBehaviour
     private void RemoveTag(int index, string tag){
         textObj.ForceMeshUpdate();
         if (textObj.text[index]!='<'){
-            Debug.Log("RemoveTag() Error: Not a tag");
+            Debug.Log($"RemoveTag() Error: Attempted to remove tag: {tag} at index {index}, but it is not a tag");
             return;
         }
         if (index>=textObj.text.Length){
