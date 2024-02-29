@@ -27,7 +27,8 @@ public class EZDialogueSystem : MonoBehaviour
     private bool canContinue = true; //if the player can continue to the next entry
     private bool moreLettersToDisplay=false;//true if the letters of the current entry are still being displayed 1 by 1, false if finished
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
-    private Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+    [HideInInspector]
+    public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
 
 
     // === variables below here are not needed to be saved in save files ===
@@ -659,15 +660,6 @@ public class EZDialogueSystem : MonoBehaviour
             return true;
 
         return false;
-    }
-
-    public string[] GetBookLines(){
-        return book.GetLines();
-    }
-
-    //asdf
-    public void SetPointer(int p){
-        book.SetPointer(p);
     }
 
 // ============== INNER CLASSES =========================================

@@ -11,6 +11,7 @@ TODO
 5. buggy when adding text (spam multiple letters at same time) ingame through the editor 
 6. for moving a sprite. initially, store current x and y and calculate end point. 
 7. combine .func .func when in same block?
+8. bug to fix: double clicking on same option will also count for the new option (if same id)
 
 #spawn(nameOfObject, img path, x, y, startTime, fade=false)
 #despawn(nameOfObject, t1, fade=false)

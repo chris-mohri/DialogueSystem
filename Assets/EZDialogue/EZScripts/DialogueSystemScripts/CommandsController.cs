@@ -135,6 +135,8 @@ public class CommandsController : MonoBehaviour
         // state = State.Inactive;
     }
 
+    //https://www.youtube.com/watch?v=qVUhV_pHig0
+
     //displays the choices and waits for user input
     private IEnumerator DisplayAndWaitForChoices(List<string> options, List<string> results) {
         chosenOption = null;
@@ -172,7 +174,7 @@ public class CommandsController : MonoBehaviour
 
         string name = dest.Substring(type.Length).Trim();
 
-        string[] lines = ds.GetBookLines();
+        string[] lines = ds.book.GetLines();
         string line;
         for(int i = 0; i<lines.Length; i++){
             line = lines[i].Trim();
@@ -181,7 +183,7 @@ public class CommandsController : MonoBehaviour
             if (line.IndexOf(type)==0){
                 //if it is the correct destination
                 if (line.Substring(type.Length).Trim() == name){
-                    ds.SetPointer(i);
+                    ds.book.SetPointer(i);
                     return;
                 }
             }
