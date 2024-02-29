@@ -105,23 +105,27 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 
     private void DisplayUnderline(string id){
         textObj.ForceMeshUpdate();
-        Debug.Log(id);
-
+        // Debug.Log(id);
         //finds the charInfo of the letter whose coordinates we need
         int tagIndex = textObj.text.IndexOf($"<link={id}>");
         int closeTagIndex = textObj.text.IndexOf("</link>", tagIndex);
         int letterIndex = closeTagIndex-1;
         TMP_CharacterInfo charInfo;
         charInfo = textObj.textInfo.characterInfo[letterIndex];
-        // Debug.Log(charInfo.bottomLeft.x);
-        Debug.Log(textObj.GetTextInfo(textObj.text).characterInfo[letterIndex].bottomLeft.y);
-        Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y, 0f);
-        Vector3 worldPosition = textObj.transform.TransformPoint(localPosition);
-        Vector3 bottomLeft = charInfo.bottomLeft;
-        // Debug.Log(worldPosition);
-        // Debug.Log(bottomLeft);
-        worldPosition.z = -0.1f;
-        UnderlineObject.GetComponent<Transform>().position = worldPosition;
+        Debug.Log(charInfo.bottomLeft);
+        Debug.Log(textObj.text[letterIndex]);
+  
+        // Debug.Log(textObj.GetTextInfo(textObj.text).characterInfo[letterIndex].bottomLeft.y);
+        Vector3 localPosition = new Vector3(charInfo.bottomRight.x, charInfo.bottomRight.y, 0f);
+        Vector3 screenPosition = textObj.transform.TransformPoint(localPosition);
+
+        localPosition.z = -0.1f;
+        screenPosition.z=-.1f;
+
+        Debug.Log("Local Position " + localPosition);
+        Debug.Log("Screen Position " + screenPosition);
+        
+        UnderlineObject.GetComponent<Transform>().position = screenPosition;
     }
 
     void Update(){
