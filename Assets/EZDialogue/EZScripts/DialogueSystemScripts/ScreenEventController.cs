@@ -12,10 +12,12 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private EZDialogueSystem ds;
     private CommandsController commandsController;
 
-    [SerializeField]
-    private GameObject UnderlineObject;
+    // [SerializeField]
+    // private GameObject commandsController.UnderlineObj;
     [SerializeField]
     private GameObject DialogueObject;
+    [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
+    private int yOffset=0;
 
     private Camera camera; 
     private RectTransform textRectTransform;
@@ -78,13 +80,15 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
                 //only change the color when necessary
                 if (previouslyHoveredLink==-1){
                     ds.ChangeOptionColor(linkId, ds.hoverFont);
-                    DisplayUnderline(linkId);
-                    //add here
+                    textObj.ForceMeshUpdate();
+                    int letterIndex = linkInfo.linkTextfirstCharacterIndex;//+linkInfo.linkTextLength-1;
+                    DisplayUnderline(letterIndex);
                 } else if (previouslyHoveredLink!=link){
                     ds.ChangeOptionColor(textObj.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
                     ds.ChangeOptionColor(linkId, ds.hoverFont);
-                    DisplayUnderline(linkId);
-                    //add here
+                    textObj.ForceMeshUpdate();
+                    int letterIndex = linkInfo.linkTextfirstCharacterIndex;//+linkInfo.linkTextLength-1;
+                    DisplayUnderline(letterIndex);
                 }
                 previouslyHoveredLink = link;
             } else {
@@ -103,43 +107,16 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 <font="VarelaRound2>2. choice B
 */
 
-    private void DisplayUnderline(string id){
-        textObj.ForceMeshUpdate();
-
-        //finds the charInfo of the letter whose coordinates we need
-        int tagIndex = textObj.text.IndexOf($"<link={id}>");
-        int closeTagIndex = textObj.text.IndexOf("</link>", tagIndex);
-        int letterIndex = closeTagIndex-1;
-        TMP_CharacterInfo charInfo;
-        // Debug.Log(letterIndex + " | " + textObj.text.Length);
-        // Debug.Log(textObj.textInfo.characterInfo.Length + " | "+textObj.textInfo.characterCount);
-        
-        Vector3[] vertices = textObj.mesh.vertices;
-
-        string line = "";
-        foreach (TMP_CharacterInfo ch in textObj.textInfo.characterInfo){
-            line+=ch.character;
-        }
-        letterIndex = line.IndexOf("1. ");
-        Debug.Log(textObj.textInfo.characterInfo[letterIndex].character);
-        charInfo = textObj.textInfo.characterInfo[letterIndex];
-        Debug.Log(line.Length);
-        Debug.Log(textObj.text.Length);
-
-        Debug.Log(charInfo.bottomLeft);
-        Debug.Log(charInfo.character);
-  
-        // Debug.Log(textObj.GetTextInfo(textObj.text).characterInfo[letterIndex].bottomLeft.y);
-        Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y, 0f);
+    private void DisplayUnderline(int letterIndex){
+        //find the minimum y of the last 3 chars
+        TMP_CharacterInfo charInfo = textObj.textInfo.characterInfo[letterIndex];
+        Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y+yOffset, 0f);
         Vector3 screenPosition = textObj.transform.TransformPoint(localPosition);
-        // screenPosition /= canvas.scaleFactor;
-        localPosition.z = -0.1f;
-        screenPosition.z=-.1f;
-
-        Debug.Log("Local Position " + localPosition);
-        Debug.Log("Screen Position " + screenPosition);
         
-        UnderlineObject.GetComponent<Transform>().position = screenPosition;
+        Vector3 oldPos = commandsController.UnderlineObj.GetComponent<Transform>().position;
+        oldPos.y = screenPosition.y;
+        commandsController.UnderlineObj.SetActive(true);
+        commandsController.UnderlineObj.GetComponent<Transform>().position = oldPos;
     }
 
     void Update(){

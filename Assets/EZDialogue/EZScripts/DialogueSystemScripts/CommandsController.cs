@@ -10,6 +10,9 @@ public class CommandsController : MonoBehaviour
     // [SerializeField] [Tooltip("Directory for where images are located")]
     // private string baseImgDirectory = "Assets/Images/"; 
 
+    // [SerializeField]
+    public GameObject UnderlineObj;
+
     //the dialogue system script (needed to access methods)
     private EZDialogueSystem ds;
 
@@ -108,11 +111,11 @@ public class CommandsController : MonoBehaviour
     //waits <twait> seconds, then moves the in-game object named <obj> by x and y, and
     //will take <tTravel> seconds to fully move by x and y
     public IEnumerator Move(string objName, int xTravel, int yTravel, float tWait, float tTravel){
-        yield return new WaitForSeconds(tWait);
+        yield return new WaitForSeconds(tWait); //don't do this cuz can't skip
         Debug.Log("placeholder");
     }
 
-    //save as above but continues movement while player is continuing dialogue
+    //same as above but continues movement while player is continuing dialogue
     public IEnumerator PersistMove(string objName, int xTravel, int yTravel, float tWait, float tTravel){
         yield return new WaitForSeconds(tWait);
         Debug.Log("placeholder");
@@ -200,6 +203,7 @@ public class CommandsController : MonoBehaviour
     public IEnumerator PlayChosenOptionAnimation(){
         yield return new WaitForSeconds(0.5f);
         Debug.Log("finished playing the animation");
+        UnderlineObj.SetActive(false);
     }
 
     //use reflection to invoke methods
