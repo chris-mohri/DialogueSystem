@@ -95,6 +95,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
                 //if not hovering over any option, make sure no option has hover effect
                 if (previouslyHoveredLink!=-1){
                     ds.ChangeOptionColor(textObj.textInfo.linkInfo[previouslyHoveredLink].GetLinkID(), ds.normalFont);
+                    commandsController.UnderlineObj.SetActive(false); //disable the underline
                 }
                 previouslyHoveredLink=-1;
             }

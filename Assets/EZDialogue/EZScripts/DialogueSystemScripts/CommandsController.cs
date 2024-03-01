@@ -203,7 +203,7 @@ public class CommandsController : MonoBehaviour
     public IEnumerator PlayChosenOptionAnimation(){
         yield return new WaitForSeconds(0.5f);
         Debug.Log("finished playing the animation");
-        UnderlineObj.SetActive(false);
+        // UnderlineObj.SetActive(false);
     }
 
     //use reflection to invoke methods
