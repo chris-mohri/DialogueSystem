@@ -106,24 +106,39 @@ public partial class CommandsController : MonoBehaviour
         // state = State.Inactive;
     }
 
-    //https://www.youtube.com/watch?v=qVUhV_pHig0
-
+    //e.g. https://www.youtube.com/watch?v=qVUhV_pHig0
     //displays the choices and waits for user input
-    private IEnumerator DisplayAndWaitForChoices(List<string> options, List<string> results) {
+    private IEnumerator DisplayAndWaitForChoices(List<string> options) {
+        List<string> results = new List<string>();
+        for (int i = 0; i<options.Count; i++){
+            results.Add($"option{i+1}");
+        }
+
         chosenOption = null;
         StartCoroutine(DisplayChoicesAfter(options, results));
+
         //wait for user input
         while(chosenOption == null){
             yield return null;
         }
 
+        //tell the dialogue system script to handle the text on screen
         ds.PlayerChoseAnOption(chosenOption);
 
+        //play an animation
         yield return StartCoroutine(PlayChosenOptionAnimation());
-        //allow continue (maybe should be placed in func1()???)
         
-        ds.ReturnControlAfterChoice();
+        ds.ReturnControlAfterChoice(); //allow the player to continue
+        UnderlineObj.SetActive(false); //disable underline
+    }
 
+    //displays the choices only when the question has been fully displayed
+    private IEnumerator DisplayChoicesAfter(List<string> options, List<string> results) {
+        //wait until question has been fully displayed, then display the choices
+        while(ds.LettersStillDisplaying() == true){
+            yield return null;
+        }
+        ds.DisplayChoices(options, results);
     }
 
     //jumps to the given route or label
@@ -230,15 +245,6 @@ public partial class CommandsController : MonoBehaviour
         }
     }
 
-    //displays the choices only when the question has been fully displayed
-    private IEnumerator DisplayChoicesAfter(List<string> options, List<string> results) {
-        //wait until question has been fully displayed, then display the choices
-        while(ds.LettersStillDisplaying() == true){
-            yield return null;
-        }
-        ds.DisplayChoices(options, results);
-    }
-
     //external option menu will send the response back to here with this func
     public void SendChosenOption(string ret){
         chosenOption = ret;
@@ -247,10 +253,6 @@ public partial class CommandsController : MonoBehaviour
     //tells all commands to skip to the end
     public void Skip(){
         skip = true;
-    }
-
-    public bool GetSkip(){
-        return skip;
     }
 
     public void ExecuteFunction(string commands){
@@ -284,7 +286,6 @@ public partial class CommandsController : MonoBehaviour
     }
 
     public bool ReadyToContinue(){
-        //todo account for animations that play as dialogue plays
         return queue.remaining == 0;
     }
 

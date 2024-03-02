@@ -195,12 +195,11 @@ public class EZDialogueSystem : MonoBehaviour
             } else if (!commandController.ReadyToContinue()){ //if a command's animation is still playing, then skip to the end result
                 SkipCommands(); //maybe require a double click?
                 
-            } 
-            else if (commandController.ReadyToContinue()){ //otherwise start displaying the next entry
+            } else if (commandController.ReadyToContinue()){ //otherwise start displaying the next entry
                 //if we haven't reached the end yet, then continue displaying
                 if (!book.IsEnd()){
                     DialogueEntry currentEntry = book.GetNextEntryAndIncrement();
-                    
+
                     //add text
                     string text = currentEntry.dialogue;
                     text = PostprocessText(text);
@@ -210,8 +209,6 @@ public class EZDialogueSystem : MonoBehaviour
                     if (currentEntry.commands != ""){
                         commandController.ExecuteFunction(currentEntry.commands);
                     }
-
-
                 } else {
                     Debug.Log("Chapter Ended");
                 }
