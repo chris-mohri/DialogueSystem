@@ -20,11 +20,14 @@ public class CommandsController : MonoBehaviour
     private SavedInformation save;
 
     //the choice menu variables
-    private string chosenOption;
-    private bool skip;
+    [HideInInspector]
+    public string chosenOption;
+    [HideInInspector]
+    public bool skip;
 
     //required variables to handle function execution 
-    private JobQueue queue;
+    [HideInInspector]
+    public JobQueue queue;
     private bool newJobWave = false;
 
     // private State state;
@@ -81,7 +84,8 @@ public class CommandsController : MonoBehaviour
     // MAKE THEM PUBLIC!!
     // ======================= STORY SCRIPTS =======================
     //chapter 1 func
-    public IEnumerator func1(){
+    public IEnumerator chapt1_func1(){
+        // StartCoroutine(Chapter1Commands.chap1_func2());
         //ask for input
         List<string> options = new List<string>(){"\"Aoko, you speak too much\"", "Stay silent"};
         List<string> results = new List<string>(){"1a", "1b"};
