@@ -724,14 +724,7 @@ public class EZDialogueSystem : MonoBehaviour
         public virtual void LoadChapter(string file){ 
             string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
             wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
-            // foreach(DialogueEntry e in wrapper.dialogueEntries){
-            //     Debug.Log("Route: "+e.route);
-            //     Debug.Log("Name: "+e.name);
-            //     Debug.Log("Dialog: "+e.dialogue);
-            //     Debug.Log("Commands: "+e.commands);
-            //     Debug.Log("Voice: "+e.voice);
-            //     Debug.Log("========");
-            // }
+
             LoadIntoDictionary();
     
         }
@@ -924,16 +917,6 @@ public class EZDialogueSystem : MonoBehaviour
             }
             wrapper = new DialogueWrapper();
             wrapper.dialogueEntries = list;
-
-            //DEBUGGING
-            // foreach(DialogueEntry e in dw.dialogueEntries){
-            //     Debug.Log("Route: "+e.route);
-            //     Debug.Log("Name: "+e.name);
-            //     Debug.Log("Dialog: "+e.dialogue);
-            //     Debug.Log("Commands: "+e.commands);
-            //     Debug.Log("Voice: "+e.voice);
-            //     Debug.Log("========");
-            // }
 
             LoadIntoDictionary();
         }

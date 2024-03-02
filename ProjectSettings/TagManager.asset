@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - SpriteArea
   layers:
   - Default
   - TransparentFX
@@ -40,4 +41,16 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 1894347639
+    locked: 0
+  - name: Sprites
+    uniqueID: 4063006105
+    locked: 0
+  - name: UI
+    uniqueID: 1571512789
+    locked: 0
+  - name: On_UI
+    uniqueID: 1154450141
     locked: 0
