@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 
-public class CommandsController : MonoBehaviour
+public partial class CommandsController : MonoBehaviour
 {
 
     // [SerializeField] [Tooltip("Directory for where images are located")]
@@ -30,24 +30,7 @@ public class CommandsController : MonoBehaviour
     public JobQueue queue;
     private bool newJobWave = false;
 
-    // private State state;
-    
-    //enum to keep track of current state of the function
-    public enum State {
-        Inactive,   //no functions running
-        Active,     //a function is running (might require multiple cycles)
-        Displaying, //a func should run and execute a display func once
-        Waiting,    //a func is running and is waiting for player input
-        Continuing  //a func is running and should continue for 1 more cycle
-    }
-
     void Awake(){
-
-    }
-    
-    // Start is called before the first frame update
-    void Start()
-    {
         //setup variables
         save = GetComponent<SavedInformation>();
         ds = GetComponent<EZDialogueSystem>();
@@ -56,7 +39,11 @@ public class CommandsController : MonoBehaviour
         queue = new JobQueue();
         chosenOption = null;
         skip = false;
-
+    }
+    
+    // Start is called before the first frame update
+    void Start(){
+    
     }
 
     public IEnumerator Test(){
@@ -78,29 +65,6 @@ public class CommandsController : MonoBehaviour
             refreshVariables();
             newJobWave = false;
         }
-    }
-
-    // INSERT CUSTOM SCRIPTS HERE 
-    // MAKE THEM PUBLIC!!
-    // ======================= STORY SCRIPTS =======================
-    //chapter 1 func
-    public IEnumerator chapt1_func1(){
-        // StartCoroutine(Chapter1Commands.chap1_func2());
-        //ask for input
-        List<string> options = new List<string>(){"\"Aoko, you speak too much\"", "Stay silent"};
-        List<string> results = new List<string>(){"1a", "1b"};
-
-        yield return StartCoroutine(DisplayAndWaitForChoices(options, results));
-
-        //then perform these
-        if (chosenOption == "1b"){
-            save.AddRouteFlag("1b"); 
-            Jump(".route 1b");
-        } else {
-            save.AddRouteFlag("1b");
-            Jump(".label happy");
-        }
-
     }
 
     // ==============================================================
@@ -432,16 +396,10 @@ public class CommandsController : MonoBehaviour
     public class Job{
         public string name;
         public object[] args;
-        public State state;
 
         public Job(string in_name, object[] in_args){
             name=in_name;
             args=in_args;
-            state = State.Active;
-        }
-
-        public void SetInactive(){
-            state = State.Inactive;
         }
 
     }
