@@ -43,7 +43,7 @@ public partial class CommandsController : MonoBehaviour
     
     // Start is called before the first frame update
     void Start(){
-    
+        
     }
 
     public IEnumerator Test(){
@@ -72,21 +72,28 @@ public partial class CommandsController : MonoBehaviour
     // MAKE THEM PUBLIC!!
     // ======================== Base Scripts ========================
 
-    public void Spawn(string objName, int x, int y, float tWait, bool fadeIn){
+    //move camera abd reset cam
 
+    public IEnumerator Spawn(string objName, float xPercent, float yPercent, float tWait, float fadeIn=0.1f){
+        //wait by tWait seconds to spawn the object
+        yield return StartCoroutine(WaitTime(tWait));
+
+        float xScreen = xPercent * Screen.width;
+        float yScreen = yPercent * Screen.height;
+        
+        //instantiate prefab
     }
 
     //waits <twait> seconds, then moves the in-game object named <obj> by x and y, and
     //will take <tTravel> seconds to fully move by x and y
-    public IEnumerator Move(string objName, int xTravel, int yTravel, float tWait, float tTravel){
+    public IEnumerator Move(string objName, float xPercent, float yPercent, float tWait, float tTravel){
         yield return new WaitForSeconds(tWait); //don't do this cuz can't skip
         Debug.Log("placeholder");
     }
 
     //same as above but continues movement while player is continuing dialogue
-    public IEnumerator PersistMove(string objName, int xTravel, int yTravel, float tWait, float tTravel){
-        yield return new WaitForSeconds(tWait);
-        Debug.Log("placeholder");
+    public IEnumerator PersistMove(string objName, float xPercent, float yPercent, float tWait, float tTravel){
+        yield return StartCoroutine(Move(objName, xPercent, yPercent, tWait, tTravel));
     }
 
     //waits <twait> seconds, then moves the in-game object named <obj> to x and y, and
@@ -96,14 +103,14 @@ public partial class CommandsController : MonoBehaviour
         Debug.Log("placeholder");
     }
 
+    //clears the screen of all text
     public void Clear(){
         ds.ClearTextThenAdd("");
-        // state = State.Inactive;
     }
 
-    public void NewPage(){
+    //displays the dialogue from the same dialogue block on a new page
+    public void OnNewPage(){
         ds.ClearTextThenRestateEntry();
-        // state = State.Inactive;
     }
 
     //e.g. https://www.youtube.com/watch?v=qVUhV_pHig0
@@ -175,6 +182,18 @@ public partial class CommandsController : MonoBehaviour
             }
         }
         throw new Exception("Destination not found when jumping to "+dest);
+    }
+
+    public IEnumerator WaitTime(float tWait, bool skippable=true){
+        float timer = 0;
+        while (timer < tWait){
+            if (skippable==true && skip==true){
+                break;
+            }
+
+            yield return null;
+            timer = Time.deltaTime;
+        }
     }
 
     // ====================================================================

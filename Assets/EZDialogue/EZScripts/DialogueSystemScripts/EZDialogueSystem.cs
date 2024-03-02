@@ -170,7 +170,6 @@ public class EZDialogueSystem : MonoBehaviour
         //update timer
         HandleTimer();
 
-        // Debug.Log(textObj.text);
     }
 
     //gets called every frame

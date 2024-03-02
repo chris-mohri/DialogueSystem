@@ -19,7 +19,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
     private int yOffset=0;
 
-    private Camera camera; 
+    private Camera screenCamera; 
     private RectTransform textRectTransform;
     private TMP_Text textObj;
     private Canvas canvas;
@@ -38,9 +38,9 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         commandsController = GetComponent<CommandsController>();
 
         if(canvas.renderMode == RenderMode.ScreenSpaceOverlay){
-            camera = null;
+            screenCamera = null;
         } else {
-            camera = canvas.worldCamera;
+            screenCamera = canvas.worldCamera;
         }
     }
 
@@ -50,7 +50,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         //only continue if the user hasn't chosen an option yet
         if (commandsController.HasChosenOption()==false){
             //check if a choice option was clicked
-            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, camera);
+            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, screenCamera);
             if(link!=-1){
                 TMP_LinkInfo linkInfo = textObj.textInfo.linkInfo[link];
                 // Debug.Log("Clicked: "+linkInfo.GetLinkID()); 
@@ -72,7 +72,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         //only continue if the user hasn't chosen an option yet
         if (commandsController.HasChosenOption()==false){
             //check if hovering over a choice option
-            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, camera);
+            int link = TMP_TextUtilities.FindIntersectingLink(textObj, mousePosition, screenCamera);
             if(link!=-1){     
                 TMP_LinkInfo linkInfo = textObj.textInfo.linkInfo[link];
                 string linkId = linkInfo.GetLinkID();

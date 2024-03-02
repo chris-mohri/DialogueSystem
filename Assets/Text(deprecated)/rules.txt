@@ -8,14 +8,16 @@ TODO
 2. DONE next page functionality
 3. add a blinking marker at the end of the current sentence. 
 4. DONE change .json logic so it automatically adds the dialogueEntries: { }
-5. buggy when adding text (spam multiple letters at same time) ingame through the editor 
+5. DONE buggy when adding text (spam multiple letters at same time) ingame through the editor 
 6. for moving a sprite. initially, store current x and y and calculate end point. 
-7. combine .func .func when in same block?
-8. bug to fix: double clicking on same option will also count for the new option (if same id)
+7. DONE combine .func .func when in same block?
+8. DONE bug to fix: double clicking on same option will also count for the new option (if same id)
+9. underline selects the y position of the number (1. or 2. ), though it should select position of the line instead
+10. movement skip infrastructure
 
 #spawn(nameOfObject, img path, x, y, startTime, fade=false)
 #despawn(nameOfObject, t1, fade=false)
 #moveby(nameOfObject, x, y, startTime, duration)
 #moveto(nameOfObject, x, y, t1, t2)
 #swap(nameOfObject, img path)
-#selection(["Take an apple", "Take an orange", "Do not eat"], ["Apple", "Orange", "null"], ["routeApple", "routeOrange", "default"])
+NAH #selection(["Take an apple", "Take an orange", "Do not eat"], ["Apple", "Orange", "null"], ["routeApple", "routeOrange", "default"])
