@@ -352,6 +352,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Log"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""eec7ea84-a11c-45df-9dd5-a8a57ed4668e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -398,6 +407,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Continue"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""00ab11a7-0ff8-4f43-905e-ac7862ef3f62"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": ""Press(behavior=1)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Log"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -426,6 +446,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Keyboard = asset.FindActionMap("Keyboard", throwIfNotFound: true);
         m_Keyboard_Q = m_Keyboard.FindAction("Q", throwIfNotFound: true);
         m_Keyboard_Continue = m_Keyboard.FindAction("Continue", throwIfNotFound: true);
+        m_Keyboard_Log = m_Keyboard.FindAction("Log", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -699,12 +720,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private List<IKeyboardActions> m_KeyboardActionsCallbackInterfaces = new List<IKeyboardActions>();
     private readonly InputAction m_Keyboard_Q;
     private readonly InputAction m_Keyboard_Continue;
+    private readonly InputAction m_Keyboard_Log;
     public struct KeyboardActions
     {
         private @PlayerControls m_Wrapper;
         public KeyboardActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Q => m_Wrapper.m_Keyboard_Q;
         public InputAction @Continue => m_Wrapper.m_Keyboard_Continue;
+        public InputAction @Log => m_Wrapper.m_Keyboard_Log;
         public InputActionMap Get() { return m_Wrapper.m_Keyboard; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -720,6 +743,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Continue.started += instance.OnContinue;
             @Continue.performed += instance.OnContinue;
             @Continue.canceled += instance.OnContinue;
+            @Log.started += instance.OnLog;
+            @Log.performed += instance.OnLog;
+            @Log.canceled += instance.OnLog;
         }
 
         private void UnregisterCallbacks(IKeyboardActions instance)
@@ -730,6 +756,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Continue.started -= instance.OnContinue;
             @Continue.performed -= instance.OnContinue;
             @Continue.canceled -= instance.OnContinue;
+            @Log.started -= instance.OnLog;
+            @Log.performed -= instance.OnLog;
+            @Log.canceled -= instance.OnLog;
         }
 
         public void RemoveCallbacks(IKeyboardActions instance)
@@ -772,5 +801,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     {
         void OnQ(InputAction.CallbackContext context);
         void OnContinue(InputAction.CallbackContext context);
+        void OnLog(InputAction.CallbackContext context);
     }
 }

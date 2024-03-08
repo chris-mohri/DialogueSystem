@@ -29,6 +29,8 @@ public class EZDialogueSystem : MonoBehaviour
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
     [HideInInspector]
     public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+    [HideInInspector]
+    public string logText;
 
 
     // === variables below here are not needed to be saved in save files ===
@@ -79,6 +81,7 @@ public class EZDialogueSystem : MonoBehaviour
         textObj.maxVisibleCharacters=0;
         aTagLength = aTag1.Length;
         dimTagLength = dimTag.Length;
+        logText="";
     }
 
     void Start(){
@@ -204,6 +207,10 @@ public class EZDialogueSystem : MonoBehaviour
                     text = PostprocessText(text);
                     AddText(text);
 
+                    //also add the text to the log object
+                    
+
+
                     //execute functions (must happen after so commands can add text)
                     if (currentEntry.commands != ""){
                         commandController.ExecuteFunction(currentEntry.commands);
@@ -213,7 +220,7 @@ public class EZDialogueSystem : MonoBehaviour
                 }
 
             }
-        //if the user tries to click when dialogue is paused
+        //if the user tries to click when dialogue is paused (such as options are displayed)
         } else if (canContinue == false && controls.Keyboard.Continue.triggered){
             if (!commandController.ReadyToContinue()){
                 SkipCommands();
@@ -332,7 +339,6 @@ public class EZDialogueSystem : MonoBehaviour
         //add the text to the textObj 
         textObj.text += text;
         textObj.ForceMeshUpdate();
-        // Debug.Log(textObj.textInfo.lineCount
 
         // ===================== DIM TAGS =============================
         // if the text doesn't have the dim tags yet, add them 

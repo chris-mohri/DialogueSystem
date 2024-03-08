@@ -12,8 +12,13 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private EZDialogueSystem ds;
     private CommandsController commandsController;
 
-    // [SerializeField]
-    // private GameObject commandsController.UnderlineObj;
+    //controls for the dialogue system
+    private PlayerControls controls;
+
+    [SerializeField] [Tooltip("Empty parent object of the dialogue text objects")]
+    private GameObject DialogueContainer;
+    [SerializeField] [Tooltip("Empty parent object of the history Log objects")]
+    private GameObject LogContainer;
     [SerializeField]
     private GameObject DialogueObject;
     [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
@@ -26,11 +31,18 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 
     private int previouslyHoveredLink;
 
+    ScreenState screenState; // current screen state
+    public enum ScreenState {
+        Default,
+        Dialogue,
+        Log,
+        Menu
+    }
+
     // Start is called before the first frame update
     void Awake()
     {
         previouslyHoveredLink = -1;
-
         ds = GetComponent<EZDialogueSystem>();
         textObj = DialogueObject.GetComponent<TMP_Text>();
         canvas = GetComponentInParent<Canvas>();
@@ -42,11 +54,46 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         } else {
             screenCamera = canvas.worldCamera;
         }
+
+        screenState = ScreenState.Dialogue;
+        controls = new PlayerControls();
+        controls.Keyboard.Log.performed += OnTabPressed;
+    }
+    private void OnEnable(){
+        controls.Enable();
+    }
+    private void OnDisable(){
+        controls.Disable();
+    }
+
+    //opens or closes the log
+    private void OnTabPressed(InputAction.CallbackContext context)
+    {
+        //don't allow interaction if in a state that you can't call the tab
+        if (screenState == ScreenState.Menu){ return; }
+
+        if (screenState == ScreenState.Dialogue){
+            screenState = ScreenState.Log;
+            ds.DisableControls();
+            DialogueContainer.SetActive(false);
+            LogContainer.SetActive(true);
+
+        } else if (screenState == ScreenState.Log){
+            screenState = ScreenState.Dialogue;
+            ds.EnableControls();
+            DialogueContainer.SetActive(true);
+            LogContainer.SetActive(false);
+        }
+
+
+        Debug.Log("uwu key pressed");
     }
 
     public void OnPointerClick(PointerEventData eventData){
-        Vector3 mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0);
+        //only continue if the screen state is set to dialogue
+        if (screenState != ScreenState.Dialogue) return;
 
+        Vector3 mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0);
         //only continue if the user hasn't chosen an option yet
         if (commandsController.HasChosenOption()==false){
             //check if a choice option was clicked
@@ -57,10 +104,12 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
                 commandsController.SendChosenOption(linkInfo.GetLinkID());
             }
         }
-
     }
 
     private void CheckHover(){
+        //only continue if the screen state is set to dialogue
+        if (screenState != ScreenState.Dialogue) return;
+
         //only check hover if there's a menu on screen
         if (ds.IsMenu()==false){
             previouslyHoveredLink = -1;
@@ -102,13 +151,10 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         }
     }
 
-/*
-<font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
-1. choice A
-<font="VarelaRound2>2. choice B
-*/
-
     private void DisplayUnderline(int letterIndex){
+        //only continue if the screen state is set to dialogue
+        if (screenState != ScreenState.Dialogue) return;
+        
         //find the minimum y of the last 3 chars
         TMP_CharacterInfo charInfo = textObj.textInfo.characterInfo[letterIndex];
         Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y+yOffset, 0f);
