@@ -50,9 +50,9 @@ public class EZDialogueSystem : MonoBehaviour
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     private int aTagLength; //set as 11
-    [SerializeField] [Tooltip("(Default: ddffff) Font for hovering over choice options")]
+    [SerializeField] [Tooltip("Font for hovering over choice options")]
     public string hoverFont = "VarelaRound2";
-    [SerializeField] [Tooltip("(Default: ddffff) Normal font")]
+    [SerializeField] [Tooltip("Normal font")]
     public string normalFont = "VarelaRound1";
 
     // ------------------- keeps track of time -------------------
