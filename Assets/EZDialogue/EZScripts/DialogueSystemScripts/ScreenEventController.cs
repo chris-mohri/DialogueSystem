@@ -21,8 +21,8 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private GameObject DialogueContainer;
     [SerializeField] [Tooltip("Empty parent object of the history Log objects")]
     private GameObject LogContainer;
-    [SerializeField] [Tooltip("The maximum opacity that the log's background image can be")] [Range(0, 255)]
-    private int maxLogBackgroundOpacity=250;
+    [SerializeField] [Tooltip("Number of seconds it takes to fade in/out the log")] [Range(0, 5)]
+    private float logFadeDuration=.3f;
     [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
     private int yOffset=0;
 
@@ -30,6 +30,8 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private RectTransform textRectTransform;
     private TMP_Text textObj;
     private Canvas canvas;
+    private CanvasGroup logAlphaComponent;
+    private CanvasGroup dialogAlphaComponent;
 
     private int previouslyHoveredLink;
 
@@ -50,6 +52,8 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
         canvas = GetComponentInParent<Canvas>();
         textRectTransform = DialogueObject.GetComponent<RectTransform>();
         commandsController = GetComponent<CommandsController>();
+        logAlphaComponent = LogContainer.GetComponent<CanvasGroup>();
+        dialogAlphaComponent = DialogueContainer.GetComponent<CanvasGroup>();
 
         if(canvas.renderMode == RenderMode.ScreenSpaceOverlay){
             screenCamera = null;
@@ -69,28 +73,73 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     }
 
     //opens or closes the log
-    private void ToggleLog(InputAction.CallbackContext context)
-    {
+    private void ToggleLog(InputAction.CallbackContext context){
+        StartCoroutine(StartToggleLog());
+    }
+
+    private bool stillToggling=false;
+    public IEnumerator StartToggleLog(){
         //don't allow interaction if in a state that you can't call the tab
-        if (screenState == ScreenState.Menu){ return; }
+        if (stillToggling==true || screenState == ScreenState.Menu){
 
-        if (screenState == ScreenState.Dialogue){
-            screenState = ScreenState.Log;
-            ds.DisableControls();
-            DialogueContainer.SetActive(false);
+        }
+        else {
+            stillToggling = true;
+            if (screenState == ScreenState.Dialogue){
+                StartCoroutine(FadeInObj(logAlphaComponent, true));
+                Vector3 newPosition = new Vector3(0, 0, 0);
+                LogContainer.GetComponent<Transform>().position = newPosition;
+                screenState = ScreenState.Log;
+                ds.DisableControls();
+                yield return StartCoroutine(FadeInObj(dialogAlphaComponent, false));
+                DialogueContainer.SetActive(false);
+                stillToggling=false;
+                
 
-            Vector3 newPosition = new Vector3(0, 0, 0);
-            LogContainer.GetComponent<Transform>().position = newPosition;
-
-        } else if (screenState == ScreenState.Log){
-            screenState = ScreenState.Dialogue;
-            ds.EnableControls();
-            DialogueContainer.SetActive(true);
-
-            Vector3 newPosition = new Vector3(0, 1200, 0);
-            LogContainer.GetComponent<Transform>().position = newPosition;
+            } else if (screenState == ScreenState.Log){
+                StartCoroutine(FadeInObj(dialogAlphaComponent, true));
+                screenState = ScreenState.Dialogue;
+                ds.EnableControls();
+                DialogueContainer.SetActive(true);
+                //wait until it is faded out before moving it
+                yield return StartCoroutine(FadeInObj(logAlphaComponent, false));
+                Vector3 newPosition = new Vector3(0, 3000, 0);
+                LogContainer.GetComponent<Transform>().position = newPosition;
+                stillToggling=false;
+            }
         }
     }
+
+    public IEnumerator FadeInObj(CanvasGroup obj, bool fadeIn){
+        float counter = 0;
+        float opacity = 1.0f;
+        if (fadeIn==true){
+            opacity=0.0f;
+        }
+
+        while (counter < logFadeDuration)
+        {
+            counter += Time.deltaTime;
+            //fade from 1 to 0
+            if (fadeIn==true){
+                opacity = Mathf.Lerp(0, 1, counter / logFadeDuration);
+            } else {
+                opacity = Mathf.Lerp(1, 0, counter / logFadeDuration);
+            }
+
+            //adjust alpha
+            obj.alpha = opacity;
+
+            //wit for next frame
+            yield return null;
+        }
+
+        if (logFadeDuration==0){
+            opacity = 1-opacity;
+            obj.alpha = opacity;
+        }
+    }
+
 
     public void OnPointerClick(PointerEventData eventData){
         //only continue if the screen state is set to dialogue
