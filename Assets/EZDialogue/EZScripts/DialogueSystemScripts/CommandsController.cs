@@ -10,7 +10,7 @@ public partial class CommandsController : MonoBehaviour
     // [SerializeField] [Tooltip("Directory for where images are located")]
     // private string baseImgDirectory = "Assets/Images/"; 
 
-    // [SerializeField]
+    [SerializeField]  [Tooltip("The GameObject that has sprite for the underline that appears when hovering over an option")]
     public GameObject UnderlineObj;
 
     //the dialogue system script (needed to access methods)
@@ -222,7 +222,7 @@ public partial class CommandsController : MonoBehaviour
 
         //if the function doesn't exist, then do not attempt to execute
         if (func==null){
-            throw new Exception("Function does not exist");
+            throw new Exception("Function does not exist: "+ funcName+"()");
         } else {
             //invoke coroutine if the func is a coroutine
             if (typeof(System.Collections.IEnumerator).IsAssignableFrom(func.ReturnType)){

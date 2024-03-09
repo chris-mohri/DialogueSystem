@@ -16,10 +16,18 @@ public class EZDialogueSystem : MonoBehaviour
     private SavedInformation save;
     private CommandsController commandController;
 
-    //the dialogue object that has the text component
-    [SerializeField]
-    private GameObject DialogueObject;
+    
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
+    private GameObject DialogueObject; //the dialogue object that has the main text component
     private TMP_Text textObj; //the text component to the DialogueObject
+
+    //for the log (dialogue history)
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log")]
+    private GameObject LogTextObject; 
+    private TMP_Text logTextTMP;
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log")]
+    private GameObject LogNamesObject; 
+    private TMP_Text logNamesTMP;
 
     // ------------------- text display/animation variables -------------------
     //variables here need to be saved into save file
@@ -29,6 +37,8 @@ public class EZDialogueSystem : MonoBehaviour
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
     [HideInInspector]
     public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+    [HideInInspector]
+    public string logNames;
     [HideInInspector]
     public string logText;
 
@@ -78,10 +88,20 @@ public class EZDialogueSystem : MonoBehaviour
         controls = new PlayerControls();
         //gets the text component from the DialogueObject
         textObj = DialogueObject.GetComponent<TMP_Text>();
+
         textObj.maxVisibleCharacters=0;
         aTagLength = aTag1.Length;
         dimTagLength = dimTag.Length;
+
+        //log variables
         logText="";
+        logNames="";
+        logTextTMP = null;
+        logNamesTMP = null;
+    
+        logTextTMP = LogTextObject.GetComponent<TMP_Text>();
+        logNamesTMP = LogNamesObject.GetComponent<TMP_Text>();
+     
     }
 
     void Start(){
@@ -89,12 +109,6 @@ public class EZDialogueSystem : MonoBehaviour
         if (autoCreateDirectories){
             SetupFolders();
         }
-
-        //check if public variables are valid
-        // if (!IsValidHex(hoverFont)){
-        //     hoverFont = "VarelaRound2";
-        //     Debug.Log("Hover color is not valid hexadecimal. (you should omit the # if you had one)");
-        // }
 
         //setup connection with other components
         save = GetComponent<SavedInformation>();
@@ -208,7 +222,7 @@ public class EZDialogueSystem : MonoBehaviour
                     AddText(text);
 
                     //also add the text to the log object
-                    
+                    AddToLog(currentEntry);
 
 
                     //execute functions (must happen after so commands can add text)
@@ -233,6 +247,36 @@ public class EZDialogueSystem : MonoBehaviour
 
         //display the letters
         AddLettersToScreen();
+    }
+
+    //__f
+    private void AddToLog(DialogueEntry entry){
+        logNames += entry.name +"\n\n";
+        logText += entry.dialogue.Replace("\n", "") +"\n\n";
+        if (logTextTMP!=null && logNamesTMP !=null) {
+            int initialNumTextLines = logTextTMP.textInfo.lineCount;
+            logTextTMP.text = logText;
+            logTextTMP.ForceMeshUpdate();
+            int addedNumTextLines = logTextTMP.textInfo.lineCount - initialNumTextLines;
+
+            int initialNumNamesLines = logNamesTMP.textInfo.lineCount;
+            logNamesTMP.text = logNames;
+            logNamesTMP.ForceMeshUpdate();
+            int addedNumNamesLines = logNamesTMP.textInfo.lineCount - initialNumNamesLines;
+
+            //add padding so they line up
+            if (addedNumTextLines > addedNumNamesLines){
+                for (int i =0; i<addedNumTextLines-addedNumNamesLines; i++){
+                    logNames += "\n";
+                    logNamesTMP.text += "\n";
+                }
+            } else if (addedNumTextLines < addedNumNamesLines){
+                for (int i =0; i<addedNumNamesLines-addedNumTextLines; i++){
+                    logText += "\n";
+                    logTextTMP.text += "\n";
+                }
+            }
+        }
     }
 /*
 <font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>

@@ -19,7 +19,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private GameObject DialogueContainer;
     [SerializeField] [Tooltip("Empty parent object of the history Log objects")]
     private GameObject LogContainer;
-    [SerializeField]
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
     private GameObject DialogueObject;
     [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
     private int yOffset=0;
@@ -76,13 +76,19 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
             screenState = ScreenState.Log;
             ds.DisableControls();
             DialogueContainer.SetActive(false);
-            LogContainer.SetActive(true);
+
+            Vector3 newPosition = new Vector3(0, 0, 0);
+            LogContainer.GetComponent<Transform>().position = newPosition;
+            // LogContainer.SetActive(true);
 
         } else if (screenState == ScreenState.Log){
             screenState = ScreenState.Dialogue;
             ds.EnableControls();
             DialogueContainer.SetActive(true);
-            LogContainer.SetActive(false);
+
+            Vector3 newPosition = new Vector3(0, 2000, 0);
+            LogContainer.GetComponent<Transform>().position = newPosition;
+            // LogContainer.SetActive(false);
         }
 
 
@@ -154,7 +160,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private void DisplayUnderline(int letterIndex){
         //only continue if the screen state is set to dialogue
         if (screenState != ScreenState.Dialogue) return;
-        
+
         //find the minimum y of the last 3 chars
         TMP_CharacterInfo charInfo = textObj.textInfo.characterInfo[letterIndex];
         Vector3 localPosition = new Vector3(charInfo.bottomLeft.x, charInfo.bottomLeft.y+yOffset, 0f);
