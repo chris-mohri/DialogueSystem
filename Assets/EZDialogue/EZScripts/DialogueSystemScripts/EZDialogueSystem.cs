@@ -70,10 +70,10 @@ public class EZDialogueSystem : MonoBehaviour
     // ------------------- keeps track of time -------------------
     private double currentTime = 0.0f;
     private double displayTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to display the next letter (default: 0.03)")] [Range(0.001f, 10f)]
+    [SerializeField] [Tooltip("Time (in seconds) to display the next letter (default: 0.03)")] [Range(0.0001f, 10f)]
     private double displaySpeed = 0.03f; //adjust as needed 
     private double fadeTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.001f, 10f)]
+    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.0001f, 10f)]
     private double fadeSpeed = 0.004f; //adjust as needed
     [SerializeField] [Tooltip("(default: 1) Default Route name in the story")]
     private static string defaultRouteName = "1";

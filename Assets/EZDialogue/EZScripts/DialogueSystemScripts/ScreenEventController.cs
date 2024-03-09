@@ -15,12 +15,14 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     //controls for the dialogue system
     private PlayerControls controls;
 
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
+    private GameObject DialogueObject;
     [SerializeField] [Tooltip("Empty parent object of the dialogue text objects")]
     private GameObject DialogueContainer;
     [SerializeField] [Tooltip("Empty parent object of the history Log objects")]
     private GameObject LogContainer;
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
-    private GameObject DialogueObject;
+    [SerializeField] [Tooltip("The maximum opacity that the log's background image can be")] [Range(0, 255)]
+    private int maxLogBackgroundOpacity=250;
     [SerializeField] [Tooltip("Y offset for displaying the underline (e.g. +5 raises the image by 5px)")]
     private int yOffset=0;
 
@@ -57,7 +59,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 
         screenState = ScreenState.Dialogue;
         controls = new PlayerControls();
-        controls.Keyboard.Log.performed += OnTabPressed;
+        controls.Keyboard.Log.performed += ToggleLog;
     }
     private void OnEnable(){
         controls.Enable();
@@ -67,7 +69,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     }
 
     //opens or closes the log
-    private void OnTabPressed(InputAction.CallbackContext context)
+    private void ToggleLog(InputAction.CallbackContext context)
     {
         //don't allow interaction if in a state that you can't call the tab
         if (screenState == ScreenState.Menu){ return; }
@@ -79,20 +81,15 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
 
             Vector3 newPosition = new Vector3(0, 0, 0);
             LogContainer.GetComponent<Transform>().position = newPosition;
-            // LogContainer.SetActive(true);
 
         } else if (screenState == ScreenState.Log){
             screenState = ScreenState.Dialogue;
             ds.EnableControls();
             DialogueContainer.SetActive(true);
 
-            Vector3 newPosition = new Vector3(0, 2000, 0);
+            Vector3 newPosition = new Vector3(0, 1200, 0);
             LogContainer.GetComponent<Transform>().position = newPosition;
-            // LogContainer.SetActive(false);
         }
-
-
-        Debug.Log("uwu key pressed");
     }
 
     public void OnPointerClick(PointerEventData eventData){
