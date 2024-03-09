@@ -249,8 +249,10 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
-    //__f
+    //adds the dialogue entry to the log
     private void AddToLog(DialogueEntry entry){
+        if (entry.name=="" && entry.dialogue=="") return;
+
         logNames += entry.name +"\n\n";
         logText += entry.dialogue.Replace("\n", "") +"\n\n";
         if (logTextTMP!=null && logNamesTMP !=null) {
@@ -277,6 +279,13 @@ public class EZDialogueSystem : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void AddChoiceToLog(string text){
+        DialogueEntry entry = new DialogueEntry();
+        entry.name = "Player chose";
+        entry.dialogue = text.Replace("\n", "");
+        AddToLog(entry);
     }
 /*
 <font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>

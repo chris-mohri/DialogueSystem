@@ -154,6 +154,7 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
                 TMP_LinkInfo linkInfo = textObj.textInfo.linkInfo[link];
                 // Debug.Log("Clicked: "+linkInfo.GetLinkID()); 
                 commandsController.SendChosenOption(linkInfo.GetLinkID());
+                ds.AddChoiceToLog(linkInfo.GetLinkText());
             }
         }
     }

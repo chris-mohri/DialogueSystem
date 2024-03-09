@@ -10,11 +10,11 @@
 	Aoko .say "To be honest, I didn't really want to leave it to Tobimaru like this."
 	#.func swap(Aoko, IMGs/Aoko/Aoko_stern.png, t1)
 	.voice Aoko/chapter1/part1.mp3
-	#.func c1_func1()
 
 	.say A hot, earthenware pot sat on the table.
 
 	.say Aoko spat out complaints to no one in particular as she plucked food from it with her chopsticks.
+	#.func c1_func1()
 
 	.say Tonight they were eating a traditional Japanese meal that looked out of place in this mansion.
 
