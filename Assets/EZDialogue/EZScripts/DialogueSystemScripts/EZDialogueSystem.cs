@@ -659,8 +659,13 @@ public class EZDialogueSystem : MonoBehaviour
     //removes the tag at the given index
     private void RemoveTag(int index, string tag){
         textObj.ForceMeshUpdate();
+
+        if (index>textObj.text.Length){
+            return;
+        }
         if (textObj.text[index]!='<'){
             Debug.Log($"RemoveTag() Error: Attempted to remove tag: {tag} at index {index}, but it is not a tag");
+            Debug.Log("Attempted to remove from: "+textObj.text.Substring(index));
             return;
         }
         if (index>=textObj.text.Length){
