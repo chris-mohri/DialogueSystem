@@ -144,6 +144,8 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData){
         //only continue if the screen state is set to dialogue
         if (screenState != ScreenState.Dialogue) return;
+        //only continue if using the built-in choice menu
+        if (ds.UseBuiltInPlayerChoiceMenu == false) return;
 
         Vector3 mousePosition = new Vector3(eventData.position.x, eventData.position.y, 0);
         //only continue if the user hasn't chosen an option yet
@@ -162,6 +164,8 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private void CheckHover(){
         //only continue if the screen state is set to dialogue
         if (screenState != ScreenState.Dialogue) return;
+        //only continue if using the built-in choice menu
+        if (ds.UseBuiltInPlayerChoiceMenu == false) return;
 
         //only check hover if there's a menu on screen
         if (ds.IsMenu()==false){
@@ -207,6 +211,10 @@ public class ScreenEventController : MonoBehaviour, IPointerClickHandler
     private void DisplayUnderline(int letterIndex){
         //only continue if the screen state is set to dialogue
         if (screenState != ScreenState.Dialogue) return;
+        //return if not using the underline obj
+        if (commandsController.UnderlineObj == null) return;
+        //only continue if using the built-in choice menu
+        if (ds.UseBuiltInPlayerChoiceMenu == false) return;
 
         //find the minimum y of the last 3 chars
         TMP_CharacterInfo charInfo = textObj.textInfo.characterInfo[letterIndex];

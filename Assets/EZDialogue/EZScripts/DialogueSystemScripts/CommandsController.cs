@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
+using UnityEngine.Events;
 
 public partial class CommandsController : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public partial class CommandsController : MonoBehaviour
     // [SerializeField] [Tooltip("Directory for where images are located")]
     // private string baseImgDirectory = "Assets/Images/"; 
 
-    [SerializeField]  [Tooltip("The GameObject that has sprite for the underline that appears when hovering over an option")]
+    [SerializeField]  [Tooltip("The GameObject that has the image for the underline that appears when hovering over an option (can leave empty if not using the built-in choice menu)")]
     public GameObject UnderlineObj;
 
     //the dialogue system script (needed to access methods)
@@ -19,11 +20,19 @@ public partial class CommandsController : MonoBehaviour
     //saved information script
     private SavedInformation save;
 
+    //all of these must be saved
     //the choice menu variables
     [HideInInspector]
     public string chosenOption;
     [HideInInspector]
+    public List<string> choiceOptionIDs;
+    [HideInInspector]
+    public List<string> choiceOptions;
+    [HideInInspector]
     public bool skip;
+
+    [Tooltip("Add the function you want that displays the choice options. It must have no parameters (choiceOptions and choiceOptionIDs are public variables! Also, send the chosen option to this script with SendChosenOption(<option>)  )")]
+    public UnityEvent DisplayChoices;
 
     //required variables to handle function execution 
     [HideInInspector]
@@ -38,6 +47,7 @@ public partial class CommandsController : MonoBehaviour
         //refresh variables 
         queue = new JobQueue();
         chosenOption = null;
+        choiceOptionIDs=null;
         skip = false;
     }
     
@@ -53,6 +63,7 @@ public partial class CommandsController : MonoBehaviour
     public void refreshVariables(){
         queue.Clear();
         chosenOption = null;
+        choiceOptionIDs=null;
         skip = false;
     }
 
@@ -121,6 +132,9 @@ public partial class CommandsController : MonoBehaviour
             results.Add($"option{i+1}");
         }
 
+        choiceOptionIDs = results;
+        choiceOptions = options;
+
         chosenOption = null;
         StartCoroutine(DisplayChoicesAfter(options, results));
 
@@ -145,7 +159,8 @@ public partial class CommandsController : MonoBehaviour
         while(ds.LettersStillDisplaying() == true){
             yield return null;
         }
-        ds.DisplayChoices(options, results);
+        //invoke the function that displays the choices
+        DisplayChoices.Invoke();
     }
 
     //jumps to the given route or label
@@ -265,8 +280,8 @@ public partial class CommandsController : MonoBehaviour
     }
 
     //external option menu will send the response back to here with this func
-    public void SendChosenOption(string ret){
-        chosenOption = ret;
+    public void SendChosenOption(string opt){
+        chosenOption = opt;
     }
 
     //tells all commands to skip to the end

@@ -21,14 +21,6 @@ public class EZDialogueSystem : MonoBehaviour
     private GameObject DialogueObject; //the dialogue object that has the main text component
     private TMP_Text textObj; //the text component to the DialogueObject
 
-    //for the log (dialogue history)
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log")]
-    private GameObject LogTextObject; 
-    private TMP_Text logTextTMP;
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log")]
-    private GameObject LogNamesObject; 
-    private TMP_Text logNamesTMP;
-
     // ------------------- text display/animation variables -------------------
     //variables here need to be saved into save file
     private bool displayingChoices = false;
@@ -62,10 +54,6 @@ public class EZDialogueSystem : MonoBehaviour
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     private int aTagLength; //set as 11
-    [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials)")]
-    public string hoverFont = "VarelaRound2";
-    [SerializeField] [Tooltip("Normal font's name (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials)")]
-    public string normalFont = "VarelaRound1";
 
     // ------------------- keeps track of time -------------------
     private double currentTime = 0.0f;
@@ -82,6 +70,20 @@ public class EZDialogueSystem : MonoBehaviour
     private static string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
     [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
     private bool autoCreateDirectories = true;
+
+    [SerializeField] [Tooltip("Toggle off if you want to make and use a custom choice menu. Be sure to send the chosen option to CommandsController with SendChosenOption(<chosen_option>)")]
+    public bool UseBuiltInPlayerChoiceMenu = true;
+    [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
+    public string hoverFont = "VarelaRound2";
+    [SerializeField] [Tooltip("Normal font's name (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
+    public string normalFont = "VarelaRound1";
+    //for the log (dialogue history)
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log")]
+    private GameObject LogTextObject; 
+    private TMP_Text logTextTMP;
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log")]
+    private GameObject LogNamesObject; 
+    private TMP_Text logNamesTMP;
 
     void Awake(){
         //creates the player controls
@@ -286,11 +288,12 @@ public class EZDialogueSystem : MonoBehaviour
         entry.dialogue = text.Replace("\n", "");
         AddToLog(entry);
     }
-/*
-<font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
-1. choice A
-<font="VarelaRound2>2. choice B
-*/
+
+    /*
+    <font="VarelaRound1"><link=$opt_1a$></link><link=1a>1.   "Aoko, you speak too much"</link>
+    1. choice A
+    <font="VarelaRound2>2. choice B
+    */
     //removes the font and link tags from the dialogue options while also deleting the unchosen options' text
     public void PlayerChoseAnOption(string chosenOption){
         //remove the color from the options
@@ -329,7 +332,9 @@ public class EZDialogueSystem : MonoBehaviour
     }
 
     //displays choices 
-    public void DisplayChoices(List<string> choices, List<string> result){
+    public void DisplayChoices(){
+        List<string> choices = commandController.choiceOptions;
+        List<string> result = commandController.choiceOptionIDs;
         canContinue = false;
         displayingChoices = true; 
         
