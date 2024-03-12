@@ -62,9 +62,9 @@ public class EZDialogueSystem : MonoBehaviour
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     private int aTagLength; //set as 11
-    [SerializeField] [Tooltip("Font for hovering over choice options")]
+    [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials)")]
     public string hoverFont = "VarelaRound2";
-    [SerializeField] [Tooltip("Normal font")]
+    [SerializeField] [Tooltip("Normal font's name (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials)")]
     public string normalFont = "VarelaRound1";
 
     // ------------------- keeps track of time -------------------
@@ -118,8 +118,7 @@ public class EZDialogueSystem : MonoBehaviour
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
-        book = new Textbook();
-        book.allowDynamicReading = true;
+        book = new Book();
         book.LoadChapter("chapter1.txt");
         // book.Export();
     }
@@ -770,109 +769,12 @@ public class EZDialogueSystem : MonoBehaviour
 
     [System.Serializable]
     public class Book{
-        //the container for all the entries in the loaded chapter. Each route corresponds to a list of entries
-        protected Dictionary<string, List<DialogueEntry>> currentChapter;
-        protected DialogueWrapper wrapper;
-        protected List<DialogueEntry> currentRoute; //the list of entries of the current route
-        protected int bookmark=0;//saves the index for the current dialogueEntry in currentRoute
+        
+        protected DialogueWrapper wrapper; //the container for all the entries in the loaded chapter (when loading .json). Each route corresponds to a list of entries
         protected string endName = ".END"; //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
         protected string defaultRoute = defaultRouteName;
         protected DialogueEntry currentEntry = null;
-        public bool allowDynamicReading = false;
 
-        public Book(){
-            currentChapter = new Dictionary<string, List<DialogueEntry>>();
-        }
-
-        //reads in a chapter file and returns a list of name/text/.../command entries
-        public virtual void LoadChapter(string file){ 
-            string jsonText = File.ReadAllText($"Assets/EZDialogue/JSONs/{file}");;
-            wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
-
-            LoadIntoDictionary();
-    
-        }
-
-        private void LoadIntoDictionary(){
-            //create dictionary based on the different routes of each entry
-            foreach (DialogueEntry entry in wrapper.dialogueEntries)
-            {
-                //if route is not in the dictionary yet, add it
-                if (!currentChapter.ContainsKey(entry.route)){
-                currentChapter[entry.route] = new List<DialogueEntry>();
-                }
-                //add the entry to that route
-                currentChapter[entry.route].Add(entry);
-            }
-            //sets the current route of this chapter to the 1st (default) route
-            currentRoute = currentChapter[defaultRoute];
-        }
-
-        //moves the current route to another route or another entry (part of the route)
-        public void JumpTo(string route, int part=0){
-            currentRoute = currentChapter[route];
-            bookmark=part;
-        }
-
-        public virtual List<DialogueEntry> GetCurrentRoute(){
-            return currentRoute;
-        }
-
-        public virtual DialogueEntry GetNextEntry(){
-            return currentRoute[bookmark];
-        }
-
-        public virtual DialogueEntry GetCurrentEntry(){
-            // if (bookmark == 0){
-            //     throw new Exception("No entry has been read yet");
-            // }
-            return currentRoute[bookmark];
-        }
-
-        public virtual DialogueEntry GetNextEntryAndIncrement(){
-            if (IsEnd()){
-                DialogueEntry entry = new DialogueEntry();
-                entry.dialogue = "REACHED END OF ROUTE";
-                // Debug.Log("Reached the End of Route");
-                return entry;
-            }
-            currentEntry = currentRoute[bookmark];
-            bookmark++;
-
-            return currentEntry;
-        }
-
-        public virtual DialogueEntry GetEntry(int i){
-            return currentRoute[i];
-        }
-
-        public virtual void SetBookmark(int num){
-            bookmark = num;
-        }
-        public virtual int GetBookmark(){
-            return bookmark;
-        }
-
-        public virtual bool IsEnd(){
-            if (bookmark >= currentRoute.Count){
-                return true;
-            }
-            return false;
-        }
-
-        public virtual void Export(){
-        }
-
-        public virtual string[] GetLines(){
-            return null;
-        }
-        public virtual void SetPointer(int p){
-        }
-
-    }
-
-    [System.Serializable]
-    public class Textbook: Book{        
         //needed because dictionaries don't preserve order
         private List<string> routeOrder;
 
@@ -888,12 +790,12 @@ public class EZDialogueSystem : MonoBehaviour
         private string filename; //includes extension type
         private string extension;
 
-        public Textbook(){
+        public Book(){
             RefreshVariables();
         }
 
         //reads in a chapter file 
-        public override void LoadChapter(string file){
+        public void LoadChapter(string file){
             // ======= refresh variables =======
             RefreshVariables();
 
@@ -909,11 +811,9 @@ public class EZDialogueSystem : MonoBehaviour
                 filepath = Path.Combine(dialogueFolderPath+"TEXTs/",file);
 
                 pointerRoute = null;
-                pointer = 0;
-                // RefreshLines();
-                if (allowDynamicReading==false){
-                    ParseAllEntries();
-                }
+                ParseAllEntries();
+                pointer=0;
+
             } else {
                 throw new Exception("File type is neither .txt or .json");
             }
@@ -924,35 +824,15 @@ public class EZDialogueSystem : MonoBehaviour
             try {
                 string jsonText = File.ReadAllText($"{dialogueFolderPath}JSONs/{file}");;
                 wrapper = JsonUtility.FromJson<DialogueWrapper>(jsonText);
-
-                LoadIntoDictionary();
             }
             catch {
                 throw new Exception("File not found");
             }
         }
 
-        private void LoadIntoDictionary(){
-            //create dictionary based on the different routes of each entry
-            foreach (DialogueEntry entry in wrapper.dialogueEntries)
-            {
-                //if route is not in the dictionary yet, add it
-                if (!currentChapter.ContainsKey(entry.route)){
-                currentChapter[entry.route] = new List<DialogueEntry>();
-                }
-                //add the entry to that route
-                currentChapter[entry.route].Add(entry);
-            }
-            //sets the current route of this chapter to the 1st (default) route
-            currentRoute = currentChapter[defaultRoute];
-        }
-
-
         private void RefreshVariables(){
-            bookmark = 0;
             pointer = 0;
             pointerRoute = null;
-            currentChapter = new Dictionary<string, List<DialogueEntry>>();
             routeOrder = new List<string>();
             wrapper = new DialogueWrapper();
         }
@@ -981,8 +861,6 @@ public class EZDialogueSystem : MonoBehaviour
             }
             wrapper = new DialogueWrapper();
             wrapper.dialogueEntries = list;
-
-            LoadIntoDictionary();
         }
 
         //gets the next entry block from the text file
@@ -1037,8 +915,6 @@ public class EZDialogueSystem : MonoBehaviour
                         //make sure there are not duplicate routes
                         if (!routeOrder.Contains(entry.route)){
                             routeOrder.Add(entry.route);
-                        } else {
-                            throw new Exception(filename+extension+": Duplicate route. Routes must be unique.");
                         }
 
                     } else if (typeOfLine==".say"){
@@ -1145,9 +1021,9 @@ public class EZDialogueSystem : MonoBehaviour
                 if (oldCommands!=null){
                     // Debug.Log("Multiple .func lines in same block on line "+pointer);
                     // throw new Exception(filename+extension+": Multiple .func lines in same block on line "+pointer);
-                    commands += " "+line.Trim();
+                    commands += " "+line.Substring(loc + type.Length).Trim();
                 } else {
-                    commands = line.Trim();
+                    commands = line.Substring(loc + type.Length).Trim();
                 }
                 
             }
@@ -1176,22 +1052,18 @@ public class EZDialogueSystem : MonoBehaviour
             return label;
         }
 
-        public override void Export(){
+        public void Export(){
             if (extension==".json"){
                 ExportToText();
             } else {
-                if (allowDynamicReading==false){
-                    ExportToJson();
-                } else {
-                    Debug.Log("CANNOT EXPORT WHEN IN DYNAMIC READING MODE");
-                }
+                ExportToJson();
+
             }
         }
 
         //export to json file
         private void ExportToJson(){
             string newFile = filename+".json";
-
             try {
                 //create directory if doesn't exist
                 if (!Directory.Exists(jsonConvertFilePath)){
@@ -1208,60 +1080,63 @@ public class EZDialogueSystem : MonoBehaviour
         //exports to text
         private void ExportToText(){
             string newFile = filename+".txt";
-            
-                //create directory if doesn't exist
-                if (!Directory.Exists(textConvertFilePath)){
-                    Directory.CreateDirectory(textConvertFilePath);
+        
+            //create directory if doesn't exist
+            if (!Directory.Exists(textConvertFilePath)){
+                Directory.CreateDirectory(textConvertFilePath);
+            }
+            List<string> list = new List<string>();
+           
+            string line = "\n";
+            foreach (DialogueEntry entry in wrapper.dialogueEntries){
+                // PrintEntry(entry);
+                if (!list.Contains(entry.route)){
+                    line += $".route {entry.route}\n";
+                    list.Add(entry.route);
                 }
-
-                List<string> list = new List<string>();
-               
-                string line = "\n";
-                foreach (DialogueEntry entry in wrapper.dialogueEntries){
-                    if (!list.Contains(entry.route)){
-                        line += $".route {entry.route}\n";
-                        list.Add(entry.route);
+                if (entry.label!=""){
+                    line += $".label {entry.label}\n";
+                }
+                if (entry.dialogue != ""){
+                    string n = entry.name;
+                    if (n!=""){
+                        n+=" ";
                     }
-
-                    if (entry.label!=""){
-                        line += $".label {entry.label}\n";
-                    }
-
-                    if (entry.dialogue != ""){
-                        string n = entry.name;
-                        if (n!=""){
-                            n+=" ";
-                        }
-                        line += $"\t{n}.say {entry.dialogue.Replace("\n", "\\n")}\n"; 
-                    }
-                    if (entry.commands != ""){
-                        line += $"\t.func {entry.commands}\n"; 
-                    }
-                    if (entry.voice != ""){
-                        line += $"\t.voice {entry.voice}\n"; 
-                    }
-                    line += "\n";
-                    }
-                
-                // Debug.Log(line);
-                File.WriteAllText(textConvertFilePath + newFile, line);
-
-                Debug.Log("JSON exported to text and saved to file: " + textConvertFilePath + newFile);
-          
+                    line += $"\t{n}.say {entry.dialogue.Replace("\n", "\\n")}\n"; 
+                }
+                if (entry.commands != ""){
+                    line += $"\t.func {entry.commands}\n"; 
+                }
+                if (entry.voice != ""){
+                    line += $"\t.voice {entry.voice}\n"; 
+                }
+                line += "\n";
+                }
+            
+            // Debug.Log(line);
+            File.WriteAllText(textConvertFilePath + newFile, line);
+            Debug.Log("JSON exported to text and saved to file: " + textConvertFilePath + newFile);
         }
 
-        public override DialogueEntry GetCurrentEntry(){
-            if (extension == ".txt" && allowDynamicReading==true){
-                return currentEntry;
-            } else {
-                return base.GetCurrentEntry();
-            }
+        public void PrintEntry(DialogueEntry entry){
+            Debug.Log("Name: "+entry.name);
+            Debug.Log("Route: "+entry.route);
+            Debug.Log("Label: "+entry.label);
+            Debug.Log("Commands: "+entry.commands);
+            Debug.Log("Voice: "+entry.voice);
 
+        }
+
+        public DialogueEntry GetCurrentEntry(){
+            if (extension == ".txt"){
+                return currentEntry;
+            }
+            return null;
         }
 
         //gets the next entry and increments as needed
-        public override DialogueEntry GetNextEntryAndIncrement(){
-            if (extension == ".txt" && allowDynamicReading==true){
+        public DialogueEntry GetNextEntryAndIncrement(){
+            if (extension == ".txt"){
                 if (IsEnd()){
                     DialogueEntry entry = new DialogueEntry();
                     entry.dialogue = "REACHED END OF ROUTE";
@@ -1269,15 +1144,13 @@ public class EZDialogueSystem : MonoBehaviour
                 }
                 currentEntry = ParseNextEntry();
                 return currentEntry;
-
-            } else {
-                return base.GetNextEntryAndIncrement();
             }
+            return null;
         }
 
-        public override bool IsEnd(){
+        public bool IsEnd(){
             RefreshLines();
-            if (extension == ".txt" && allowDynamicReading==true){
+            if (extension == ".txt"){
                 int tempPointer = pointer;
                 string line;
                 while (tempPointer < lines.Length){
@@ -1290,16 +1163,15 @@ public class EZDialogueSystem : MonoBehaviour
                 }
 
                 return true;
-            } else {
-                return base.IsEnd();
             }
+            return true;
         }
 
-        public override string[] GetLines(){
+        public string[] GetLines(){
             return lines;
         }
 
-        public override void SetPointer(int i){
+        public void SetPointer(int i){
             pointer=i;
         }
 
