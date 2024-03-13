@@ -63,8 +63,6 @@ public class EZDialogueSystem : MonoBehaviour
     private double fadeTimer = 0.0f;
     [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.0001f, 10f)]
     private double fadeSpeed = 0.004f; //adjust as needed
-    [SerializeField] [Tooltip("(default: 1) Default Route name in the story")]
-    private static string defaultRouteName = "1";
 
     //[SerializeField] [Tooltip("(default: Assets/EZDialogue/) File Path for Dialogue files. Make sure to also have subfolders here called 'JSONs' and 'TSVs'")]
     private static string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
@@ -82,10 +80,10 @@ public class EZDialogueSystem : MonoBehaviour
     [Header("Log")]
     [SerializeField] [Tooltip("Toggle off if you want to make and use a custom log system")]
     public bool UseBuiltInLogSystem = true;
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log")]
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log (Can leave empty if not using built-in Log system)")]
     private GameObject LogTextObject; 
     private TMP_Text logTextTMP;
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log")]
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log (Can leave empty if not using built-in Log system)")]
     private GameObject LogNamesObject; 
     private TMP_Text logNamesTMP;
 
@@ -780,14 +778,9 @@ public class EZDialogueSystem : MonoBehaviour
 
     [System.Serializable]
     public class Book{
-        
         protected DialogueWrapper wrapper; //the container for all the entries in the loaded chapter (when loading .json). Each route corresponds to a list of entries
-        protected string endName = ".END"; //marker that marks the end of the chapter (must be set as the name in a dialogue entry)
-        protected string defaultRoute = defaultRouteName;
-        protected DialogueEntry currentEntry = null;
-
-        //needed because dictionaries don't preserve order
-        private List<string> routeOrder;
+        public DialogueEntry currentEntry = null;
+        public List<DialogueEntry> entryList;
 
         //for dynamically accessing the text file
         private string pointerRoute = null;
@@ -803,6 +796,11 @@ public class EZDialogueSystem : MonoBehaviour
 
         public Book(){
             RefreshVariables();
+            entryList = new List<DialogueEntry>();
+        }
+
+        public void ResetEntryList(){
+            entryList = new List<DialogueEntry>();
         }
 
         //reads in a chapter file 
@@ -844,7 +842,6 @@ public class EZDialogueSystem : MonoBehaviour
         private void RefreshVariables(){
             pointer = 0;
             pointerRoute = null;
-            routeOrder = new List<string>();
             wrapper = new DialogueWrapper();
         }
 
@@ -908,6 +905,7 @@ public class EZDialogueSystem : MonoBehaviour
                         if (entry.route==null){
                             throw new Exception("No route attached to this entry block"); 
                         }
+                        entryList.Add(entry);
                         return entry;
                     } else {
                         continue;
@@ -922,11 +920,6 @@ public class EZDialogueSystem : MonoBehaviour
                     if (typeOfLine==".route"){
                         pointerRoute = ParseRoute(line, pointerRoute);
                         entry.route = pointerRoute;
-
-                        //make sure there are not duplicate routes
-                        if (!routeOrder.Contains(entry.route)){
-                            routeOrder.Add(entry.route);
-                        }
 
                     } else if (typeOfLine==".say"){
                         nameAndDialogue = ParseDialogue(line, nameAndDialogue);
@@ -1184,6 +1177,40 @@ public class EZDialogueSystem : MonoBehaviour
 
         public void SetPointer(int i){
             pointer=i;
+        }
+
+        public void Jump(string dest){
+            dest = dest.Trim();
+            if (dest[0]!='.'){
+                dest = "."+dest;
+            }
+
+            //gets whether it is a .route or .label that is being jumped to 
+            string type;
+            if (dest.IndexOf(".route")==0){
+                type=".route";
+            } else if (dest.IndexOf(".label")==0){
+                type=".label";
+            } else {
+                throw new Exception("Invalid jump type (must be .route or .label) when attempting to jump to "+dest);
+            }
+
+            string name = dest.Substring(type.Length).Trim();
+
+            string line;
+            for(int i = 0; i<lines.Length; i++){
+                line = lines[i].Trim();
+                
+                //if the line is the correct type (.route or .label)
+                if (line.IndexOf(type)==0){
+                    //if it is the correct destination
+                    if (line.Substring(type.Length).Trim() == name){
+                        SetPointer(i);
+                        return;
+                    }
+                }
+            }
+            throw new Exception("Destination not found when jumping to "+ dest);
         }
 
     }

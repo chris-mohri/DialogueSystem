@@ -165,38 +165,7 @@ public partial class CommandsController : MonoBehaviour
 
     //jumps to the given route or label
     public void Jump(string dest){
-        dest = dest.Trim();
-        if (dest[0]!='.'){
-            dest = "."+dest;
-        }
-
-        //gets whether it is a .route or .label that is being jumped to 
-        string type;
-        if (dest.IndexOf(".route")==0){
-            type=".route";
-        } else if (dest.IndexOf(".label")==0){
-            type=".label";
-        } else {
-            throw new Exception("Invalid jump type (must be .route or .label) when attempting to jump to "+dest);
-        }
-
-        string name = dest.Substring(type.Length).Trim();
-
-        string[] lines = ds.book.GetLines();
-        string line;
-        for(int i = 0; i<lines.Length; i++){
-            line = lines[i].Trim();
-            
-            //if the line is the correct type (.route or .label)
-            if (line.IndexOf(type)==0){
-                //if it is the correct destination
-                if (line.Substring(type.Length).Trim() == name){
-                    ds.book.SetPointer(i);
-                    return;
-                }
-            }
-        }
-        throw new Exception("Destination not found when jumping to "+dest);
+        ds.book.Jump(dest);
     }
 
     public IEnumerator WaitTime(float tWait, bool skippable=true){
