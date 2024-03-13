@@ -440,7 +440,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &461754603
@@ -1398,7 +1398,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2edf7a519453f145ae4b902909a6add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DialogueObject: {fileID: 1041983444}
   book:
     currentEntry:
       route: 
@@ -1408,18 +1407,21 @@ MonoBehaviour:
       voice: 
       label: 
     entryList: []
+    dialogueFolderPath: Assets/EZDialogue/DialogueFiles/
+  LogInfo:
+    LogEntryList: []
+  DialogueObject: {fileID: 1041983444}
+  dialogueFolderPath: Assets/EZDialogue/DialogueFiles/
+  autoCreateDirectories: 1
   alphaIncrement: 5
   displaySpeed: 0.029999999329447746
   fadeSpeed: 0.004000000189989805
-  autoCreateDirectories: 1
   UseBuiltInChoiceSystem: 1
   normalFont: VarelaRound1
   hoverFont: VarelaRound2
   UseBuiltInLogSystem: 1
   LogTextObject: {fileID: 1446802848}
   LogNamesObject: {fileID: 1996710977}
-  LogInfo:
-    LogEntryList: []
 --- !u!114 &1331631635
 MonoBehaviour:
   m_ObjectHideFlags: 0

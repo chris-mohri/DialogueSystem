@@ -16,11 +16,6 @@ public class EZDialogueSystem : MonoBehaviour
     private SavedInformation save;
     private CommandsController commandController;
 
-    [Header("Setup Settings")]
-    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
-    private GameObject DialogueObject; //the dialogue object that has the main text component
-    private TMP_Text textObj; //the text component to the DialogueObject
-
     // ------------------- text display/animation variables -------------------
     //variables here need to be saved into save file
     private bool displayingChoices = false;
@@ -29,15 +24,19 @@ public class EZDialogueSystem : MonoBehaviour
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
     [HideInInspector]
     public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
+    [HideInInspector]
+    public LogInformation LogInfo;
+    private int currentCharIndex=0; //tracks the index of the newest letter shown on screen from the raw text (also counts tmpro tags)
 
     // === variables below here are not needed to be saved in save files ===
     private bool forceContinue = false;
     //indentation spaces for new lines. adjust as needed
     private string newLineSpace = "  ";
-    //tracks the index of the newest letter shown on screen from the raw text
-    //  (raw text also counts any of TMPro's alpha or color tags that don't show up
-    //  when using textObj.textInfo.characterCount)
-    private int currentCharIndex=0;
+    
+    [Header("Setup Settings")]
+    [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
+    private GameObject DialogueObject; //the dialogue object that has the main text component
+    private TMP_Text textObj; //the text component to the DialogueObject
 
     [SerializeField] [Tooltip("(default: Assets/EZDialogue/DialogueFiles/  ) File Path for Dialogue files")]
     private string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
@@ -49,23 +48,19 @@ public class EZDialogueSystem : MonoBehaviour
     //the increment amount for the alpha (opacity) of letters
     [SerializeField] [Tooltip("Increment amount (percent) for the fade-in effect of letters (default: 5)")] [Range(1, 100)]
     private int alphaIncrement = 5;
+    [SerializeField] [Tooltip("Time (in seconds) to display the next letter (default: 0.03)")] [Range(0.0001f, 10f)]
+    private double displaySpeed = 0.03f; //adjust as needed
+    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.0001f, 10f)]
+    private double fadeSpeed = 0.004f; //adjust as needed
+
     //starting alpha value of the newest letter that is displayed (keep at 10 since
-    //  since the length must stay as 11)
-    private string aTag1 = "<alpha=#10><link=$fade$></link>"; //11 length
+    //  since the length must stay as uniform)
+    private string aTag1 = "<alpha=#10><link=$fade$></link>"; 
     //dim tag (previously displayed sentences are dimmed)
     private string dimTag = "<color=#aaaaaa><link=$dim$></link><alpha=#b8><link=$dim$></link>";
     private string undimTag = "<color=#ffffff><link=$undim$></link><alpha=#ff><link=$undim$></link>";
     private int dimTagLength;
     private int aTagLength; //set as 11
-
-    // ------------------- keeps track of time -------------------
-    private double currentTime = 0.0f;
-    private double displayTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to display the next letter (default: 0.03)")] [Range(0.0001f, 10f)]
-    private double displaySpeed = 0.03f; //adjust as needed 
-    private double fadeTimer = 0.0f;
-    [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.0001f, 10f)]
-    private double fadeSpeed = 0.004f; //adjust as needed
 
     [Header("Choice System")]
     [SerializeField] [Tooltip("Toggle off if you want to make and use a custom choice menu. Be sure to send the chosen option to CommandsController with SendChosenOption(<chosen_option>)")]
@@ -94,8 +89,10 @@ public class EZDialogueSystem : MonoBehaviour
     private GameObject LogNamesObject; 
     private TMP_Text logNamesTMP;
 
-    [HideInInspector]
-    public LogInformation LogInfo;
+    // ------------------- keeps track of time -------------------
+    private double currentTime = 0.0f;
+    private double displayTimer = 0.0f;
+    private double fadeTimer = 0.0f;
 
     void Awake(){
         //creates the player controls
@@ -366,7 +363,7 @@ public class EZDialogueSystem : MonoBehaviour
             left = "<font=\""+normalFont+"\"><link=$opt_"+result[i]+"$></link>"+aTag1+"<link="+result[i]+">"+num+".   ";
             middle = choices[i]+"</link>";
             text+= left+middle+"\n";
-        } //__s
+        }
         text+="\n";
 
         //add the text
@@ -588,7 +585,6 @@ public class EZDialogueSystem : MonoBehaviour
         }
     }
 
-    //__s
     //<link=><color=#ffffff><link=choice_option_color></link>
     //<link=1a><color=#aaaaaa><l></l><alpha>1. hi there</link>
     public void ChangeOptionColor(string id, string fontName){
@@ -1256,5 +1252,4 @@ public class EZDialogueSystem : MonoBehaviour
         
 
     }
-
 }
