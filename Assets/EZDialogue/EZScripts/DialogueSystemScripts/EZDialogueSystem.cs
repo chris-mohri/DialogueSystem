@@ -759,40 +759,12 @@ public class EZDialogueSystem : MonoBehaviour
 
 //required for deserializing json
 //In the .json file, must look like  { dialogueEntries: [ {entry1}, {entry2}, {...} ] }
-    [System.Serializable]
-    public class DialogueWrapper{
-        public List<DialogueEntry> dialogueEntries;
-
-        public DialogueWrapper(){
-            dialogueEntries = new List<DialogueEntry>();
-        }
-    }
-    //required for deserializing json as described above
-    //each entry must have these fields
-    [System.Serializable]
-    public class DialogueEntry{
-        public string route;
-        public string name;
-        public string dialogue;
-        public string commands; //might be beyond scope of dialogue system
-        public string voice;
-        public string label;
-
-        public DialogueEntry(){
-            route="";
-            name="";
-            dialogue="";
-            commands="";
-            voice="";
-            label="";
-        }
-    }
 
     [System.Serializable]
     public class Book{
         protected DialogueWrapper wrapper; //the container for all the entries in the loaded chapter (when loading .json). Each route corresponds to a list of entries
         public DialogueEntry currentEntry = null;
-        public List<DialogueEntry> entryList;
+        public List<DialogueEntry> entries;
         [SerializeField]
         public string dialogueFolderPath;
 
@@ -810,7 +782,7 @@ public class EZDialogueSystem : MonoBehaviour
 
         public Book(string dialogueFolderPath){
             RefreshVariables();
-            entryList = new List<DialogueEntry>();
+            entries = new List<DialogueEntry>();
 
             this.dialogueFolderPath = dialogueFolderPath;
             jsonConvertFilePath = dialogueFolderPath + "TEXTtoJSON/";
@@ -818,7 +790,7 @@ public class EZDialogueSystem : MonoBehaviour
         }
 
         public void ResetEntryList(){
-            entryList = new List<DialogueEntry>();
+            entries = new List<DialogueEntry>();
         }
 
         //reads in a chapter file 
@@ -839,6 +811,9 @@ public class EZDialogueSystem : MonoBehaviour
 
                 pointerRoute = null;
                 ParseAllEntries();
+
+                //reset variables after initial loading of the json wrapper
+                ResetEntryList();
                 pointer=0;
 
             } else {
@@ -923,7 +898,7 @@ public class EZDialogueSystem : MonoBehaviour
                         if (entry.route==null){
                             throw new Exception("No route attached to this entry block"); 
                         }
-                        entryList.Add(entry);
+                        entries.Add(entry);
                         return entry;
                     } else {
                         continue;
@@ -1251,5 +1226,33 @@ public class EZDialogueSystem : MonoBehaviour
 
         
 
+    }
+}
+
+[System.Serializable]
+public class DialogueWrapper{
+    public List<DialogueEntry> dialogueEntries;
+    public DialogueWrapper(){
+        dialogueEntries = new List<DialogueEntry>();
+    }
+}
+
+//required for deserializing json as described above
+//each entry must have these fields
+[System.Serializable]
+public class DialogueEntry{
+    public string route;
+    public string name;
+    public string dialogue;
+    public string commands; //might be beyond scope of dialogue system
+    public string voice;
+    public string label;
+    public DialogueEntry(){
+        route="";
+        name="";
+        dialogue="";
+        commands="";
+        voice="";
+        label="";
     }
 }
