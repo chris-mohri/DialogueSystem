@@ -71,6 +71,7 @@ public class EZDialogueSystem : MonoBehaviour
     [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
     private bool autoCreateDirectories = true;
 
+    [Header("Choice System")]
     [SerializeField] [Tooltip("Toggle off if you want to make and use a custom choice menu. Be sure to send the chosen option to CommandsController with SendChosenOption(<chosen_option>)")]
     public bool UseBuiltInPlayerChoiceMenu = true;
     [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
@@ -78,6 +79,9 @@ public class EZDialogueSystem : MonoBehaviour
     [SerializeField] [Tooltip("Normal font's name (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
     public string normalFont = "VarelaRound1";
     //for the log (dialogue history)
+    [Header("Log")]
+    [SerializeField] [Tooltip("Toggle off if you want to make and use a custom log system")]
+    public bool UseBuiltInLogSystem = true;
     [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log")]
     private GameObject LogTextObject; 
     private TMP_Text logTextTMP;
@@ -250,13 +254,15 @@ public class EZDialogueSystem : MonoBehaviour
         AddLettersToScreen();
     }
 
+    //TODO add more support to access necessary data for custom log systems
+
     //adds the dialogue entry to the log
     private void AddToLog(DialogueEntry entry){
         if (entry.name=="" && entry.dialogue=="") return;
 
         logNames += entry.name +"\n\n";
         logText += entry.dialogue.Replace("\n", "") +"\n\n";
-        if (logTextTMP!=null && logNamesTMP !=null) {
+        if (logTextTMP!=null && logNamesTMP !=null && UseBuiltInLogSystem==true) {
             int initialNumTextLines = logTextTMP.textInfo.lineCount;
             logTextTMP.text = logText;
             logTextTMP.ForceMeshUpdate();
