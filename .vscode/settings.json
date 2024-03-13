@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "*.aski": "markdown"
+    },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "meta.paragraph.markdown",
+                "settings": {
+                    "foreground": "#e099b7" // Set color for specific regex pattern (blue)
+                }
+            }
+        ]
+    },
+    "editor.semanticTokenColorCustomizations": {
+        "enabled": true,
+        "rules": {
+            "string.regexp.label.mytxt": {
+                "foreground": "#0000FF" // Set color for specific regex pattern (blue)
+            }
+        }
+    }
+}
