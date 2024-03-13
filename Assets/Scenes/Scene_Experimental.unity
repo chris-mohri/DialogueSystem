@@ -1399,16 +1399,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DialogueObject: {fileID: 1041983444}
-  LogTextObject: {fileID: 1446802848}
-  LogNamesObject: {fileID: 1996710977}
-  logNames: 
-  logText: 
+  book:
+    currentEntry:
+      route: 
+      name: 
+      dialogue: 
+      commands: 
+      voice: 
+      label: 
+    entryList: []
   alphaIncrement: 5
-  hoverFont: VarelaRound2
-  normalFont: VarelaRound1
   displaySpeed: 0.029999999329447746
   fadeSpeed: 0.004000000189989805
   autoCreateDirectories: 1
+  UseBuiltInChoiceSystem: 1
+  normalFont: VarelaRound1
+  hoverFont: VarelaRound2
+  UseBuiltInLogSystem: 1
+  LogTextObject: {fileID: 1446802848}
+  LogNamesObject: {fileID: 1996710977}
+  LogInfo:
+    LogEntryList: []
 --- !u!114 &1331631635
 MonoBehaviour:
   m_ObjectHideFlags: 0

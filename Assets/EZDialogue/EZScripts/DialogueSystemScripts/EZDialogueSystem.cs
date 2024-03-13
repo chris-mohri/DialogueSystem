@@ -16,7 +16,7 @@ public class EZDialogueSystem : MonoBehaviour
     private SavedInformation save;
     private CommandsController commandController;
 
-    
+    [Header("Setup Settings")]
     [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying dialogue")]
     private GameObject DialogueObject; //the dialogue object that has the main text component
     private TMP_Text textObj; //the text component to the DialogueObject
@@ -29,11 +29,6 @@ public class EZDialogueSystem : MonoBehaviour
     private int undimTagIndex=-1; //keeps track of the un-dim tags. 
     [HideInInspector]
     public Book book; //the main data object that holds the dialogue information. must be accessible to CommandsController
-    [HideInInspector]
-    public string logNames;
-    [HideInInspector]
-    public string logText;
-
 
     // === variables below here are not needed to be saved in save files ===
     private bool forceContinue = false;
@@ -43,6 +38,14 @@ public class EZDialogueSystem : MonoBehaviour
     //  (raw text also counts any of TMPro's alpha or color tags that don't show up
     //  when using textObj.textInfo.characterCount)
     private int currentCharIndex=0;
+
+    [SerializeField] [Tooltip("(default: Assets/EZDialogue/DialogueFiles/  ) File Path for Dialogue files")]
+    private string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
+    
+    [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
+    private bool autoCreateDirectories = true;
+
+    [Header("Dialogue Settings")]
     //the increment amount for the alpha (opacity) of letters
     [SerializeField] [Tooltip("Increment amount (percent) for the fade-in effect of letters (default: 5)")] [Range(1, 100)]
     private int alphaIncrement = 5;
@@ -64,28 +67,35 @@ public class EZDialogueSystem : MonoBehaviour
     [SerializeField] [Tooltip("Time (in seconds) to increment the opacity of letters (default: 0.004)")] [Range(0.0001f, 10f)]
     private double fadeSpeed = 0.004f; //adjust as needed
 
-    //[SerializeField] [Tooltip("(default: Assets/EZDialogue/) File Path for Dialogue files. Make sure to also have subfolders here called 'JSONs' and 'TSVs'")]
-    private static string dialogueFolderPath = "Assets/EZDialogue/DialogueFiles/";
-    [SerializeField] [Tooltip("Toggle to allow script to automatically create necessary directories")]
-    private bool autoCreateDirectories = true;
-
     [Header("Choice System")]
     [SerializeField] [Tooltip("Toggle off if you want to make and use a custom choice menu. Be sure to send the chosen option to CommandsController with SendChosenOption(<chosen_option>)")]
-    public bool UseBuiltInPlayerChoiceMenu = true;
-    [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
-    public string hoverFont = "VarelaRound2";
+    public bool UseBuiltInChoiceSystem = true;
+
+    [ConditionalHide("UseBuiltInChoiceSystem", true)]
     [SerializeField] [Tooltip("Normal font's name (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
     public string normalFont = "VarelaRound1";
+
+    [ConditionalHide("UseBuiltInChoiceSystem", true)]
+    [SerializeField] [Tooltip("Font asset's name for hovering over choice options. (make sure the font asset is found in TextMesh Pro/Resources/Fonts & Materials) (Can leave empty if not using built-in choice system)")]
+    public string hoverFont = "VarelaRound2";
+
     //for the log (dialogue history)
     [Header("Log")]
     [SerializeField] [Tooltip("Toggle off if you want to make and use a custom log system")]
     public bool UseBuiltInLogSystem = true;
+
+    [ConditionalHide("UseBuiltInLogSystem", true)]
     [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the dialogue in the Log (Can leave empty if not using built-in Log system)")]
     private GameObject LogTextObject; 
     private TMP_Text logTextTMP;
+
+    [ConditionalHide("UseBuiltInLogSystem", true)]
     [SerializeField] [Tooltip("The GameObject that has the TextMeshPro component for displaying the names in the Log (Can leave empty if not using built-in Log system)")]
     private GameObject LogNamesObject; 
     private TMP_Text logNamesTMP;
+
+    [HideInInspector]
+    public LogInformation LogInfo;
 
     void Awake(){
         //creates the player controls
@@ -98,8 +108,7 @@ public class EZDialogueSystem : MonoBehaviour
         dimTagLength = dimTag.Length;
 
         //log variables
-        logText="";
-        logNames="";
+        LogInfo = new LogInformation();
         logTextTMP = null;
         logNamesTMP = null;
     
@@ -109,6 +118,10 @@ public class EZDialogueSystem : MonoBehaviour
     }
 
     void Start(){
+        //fix the folder path if needed
+        if (dialogueFolderPath[dialogueFolderPath.Length-1] != '/'){
+            dialogueFolderPath+="/";
+        }
         //verify that the necessary folders exist
         if (autoCreateDirectories){
             SetupFolders();
@@ -122,7 +135,7 @@ public class EZDialogueSystem : MonoBehaviour
         textObj.maxVisibleCharacters = textObj.textInfo.characterCount;
         currentCharIndex = textObj.text.Length;
 
-        book = new Book();
+        book = new Book(dialogueFolderPath);
         book.LoadChapter("chapter1.txt");
         // book.Export();
     }
@@ -243,44 +256,47 @@ public class EZDialogueSystem : MonoBehaviour
                 SkipCommands();
             }
         }
-        // Debug.Log(textObj.text);
-        // Debug.Log(textObj.textInfo.characterCount);
-        // Debug.Log(textObj.maxVisibleCharacters);
-        // Debug.Log(currentCharIndex);
 
         //display the letters
         AddLettersToScreen();
     }
 
-    //TODO add more support to access necessary data for custom log systems
-
     //adds the dialogue entry to the log
     private void AddToLog(DialogueEntry entry){
         if (entry.name=="" && entry.dialogue=="") return;
 
-        logNames += entry.name +"\n\n";
-        logText += entry.dialogue.Replace("\n", "") +"\n\n";
-        if (logTextTMP!=null && logNamesTMP !=null && UseBuiltInLogSystem==true) {
-            int initialNumTextLines = logTextTMP.textInfo.lineCount;
-            logTextTMP.text = logText;
-            logTextTMP.ForceMeshUpdate();
-            int addedNumTextLines = logTextTMP.textInfo.lineCount - initialNumTextLines;
+        LogInfo.AddEntryToLog(entry);
+        AlignNameAndDialogueTexts(logNamesTMP, logTextTMP, entry);
 
-            int initialNumNamesLines = logNamesTMP.textInfo.lineCount;
-            logNamesTMP.text = logNames;
-            logNamesTMP.ForceMeshUpdate();
-            int addedNumNamesLines = logNamesTMP.textInfo.lineCount - initialNumNamesLines;
+    }
+
+    //if using 2 seperate TMPs for name and dialogue, this will auto align them so that the name and dialogue align with one another
+    public void AlignNameAndDialogueTexts(TMP_Text nameTMP, TMP_Text dialogueTMP, DialogueEntry entry){
+        if (dialogueTMP!=null && nameTMP !=null && UseBuiltInLogSystem==true) {
+
+            string logText = dialogueTMP.text + entry.dialogue.Replace("\n", "") +"\n\n";
+            string logNames = nameTMP.text + entry.name +"\n\n";
+
+            int initialNumTextLines = dialogueTMP.textInfo.lineCount;
+            dialogueTMP.text = logText;
+            dialogueTMP.ForceMeshUpdate();
+            int addedNumTextLines = dialogueTMP.textInfo.lineCount - initialNumTextLines;
+
+            int initialNumNamesLines = nameTMP.textInfo.lineCount;
+            nameTMP.text = logNames;
+            nameTMP.ForceMeshUpdate();
+            int addedNumNamesLines = nameTMP.textInfo.lineCount - initialNumNamesLines;
 
             //add padding so they line up
             if (addedNumTextLines > addedNumNamesLines){
                 for (int i =0; i<addedNumTextLines-addedNumNamesLines; i++){
                     logNames += "\n";
-                    logNamesTMP.text += "\n";
+                    nameTMP.text += "\n";
                 }
             } else if (addedNumTextLines < addedNumNamesLines){
                 for (int i =0; i<addedNumNamesLines-addedNumTextLines; i++){
                     logText += "\n";
-                    logTextTMP.text += "\n";
+                    dialogueTMP.text += "\n";
                 }
             }
         }
@@ -781,6 +797,8 @@ public class EZDialogueSystem : MonoBehaviour
         protected DialogueWrapper wrapper; //the container for all the entries in the loaded chapter (when loading .json). Each route corresponds to a list of entries
         public DialogueEntry currentEntry = null;
         public List<DialogueEntry> entryList;
+        [SerializeField]
+        public string dialogueFolderPath;
 
         //for dynamically accessing the text file
         private string pointerRoute = null;
@@ -789,14 +807,18 @@ public class EZDialogueSystem : MonoBehaviour
         private string filepath;
 
         //files
-        private string jsonConvertFilePath = dialogueFolderPath + "TEXTtoJSON/";
-        private string textConvertFilePath = dialogueFolderPath + "JSONtoText/";
+        private string jsonConvertFilePath;
+        private string textConvertFilePath;
         private string filename; //includes extension type
         private string extension;
 
-        public Book(){
+        public Book(string dialogueFolderPath){
             RefreshVariables();
             entryList = new List<DialogueEntry>();
+
+            this.dialogueFolderPath = dialogueFolderPath;
+            jsonConvertFilePath = dialogueFolderPath + "TEXTtoJSON/";
+            textConvertFilePath = dialogueFolderPath + "JSONtoText/";
         }
 
         public void ResetEntryList(){
@@ -1215,11 +1237,24 @@ public class EZDialogueSystem : MonoBehaviour
 
     }
 
-    /*
-    1. get text to appear on screen + lower alpha of previous entries + add blinking marker at end
-    2. log system
-    3. choice system
-    4. hide button 
-    */
+    [System.Serializable]
+    public class LogInformation{
+        public List<DialogueEntry> LogEntryList;
+
+        public LogInformation(){
+            LogEntryList = new List<DialogueEntry>();
+        }
+
+        public void AddEntryToLog(DialogueEntry entry){
+            LogEntryList.Add(entry);
+        }
+
+        public void ResetLog(){
+            LogEntryList = new List<DialogueEntry>();
+        }
+
+        
+
+    }
 
 }
