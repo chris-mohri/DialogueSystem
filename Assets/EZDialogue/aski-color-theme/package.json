@@ -1,0 +1,28 @@
+{
+  "name": "aski-color",
+  "displayName": "AskiColor",
+  "description": "Coloring for .aski files",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Aski Color",
+        "uiTheme": "vs-dark",
+        "path": "./themes/Aski Color-color-theme.json"
+      }
+    ],
+    "grammars": [
+      {
+          "language": "plaintext",
+          "scopeName": "source.aski",
+          "path": "grammar.json"
+      }
+    ] 
+  }
+}

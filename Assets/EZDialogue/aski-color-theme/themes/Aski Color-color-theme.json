@@ -1,0 +1,75 @@
+{
+	"name": "Aski Color",
+	"colors": {
+		"editor.background": "#1f1f1f",
+		"editor.foreground": "#9CDCFE",
+		"activityBarBadge.background": "#007acc",
+		"sideBarTitle.foreground": "#bbbbbb"
+	},
+
+	"tokenColors": [
+		{
+			"name": "Voice",
+			"scope": [
+				"aski.default.voice"
+			],
+			"settings": {
+				"foreground": "#e2a5bd"
+			}
+		},
+		{
+			"name": "Commands",
+			"scope": [
+				"aski.default.commands"
+			],
+			"settings": {
+				"foreground": "#dfebc3"
+			}
+		},
+		{
+			"name": "Label",
+			"scope": [
+				"aski.default.label"
+			],
+			"settings": {
+				"foreground": "#9fd4a1"
+			}
+		},
+		{
+			"name": "Route",
+			"scope": [
+				"aski.default.route"
+			],
+			"settings": {
+				"foreground": "#abd6c9"
+			}
+		},
+		{
+			"name": "Character",
+			"scope": [
+				"aski.default.char"
+			],
+			"settings": {
+				"foreground": "#da2a70"
+			}
+		},
+		{
+			"name": "Say",
+			"scope": [
+				"aski.default.say"
+			],
+			"settings": {
+				"foreground": "#e2a5bd"
+			}
+		},
+		{
+			"name": "Say",
+			"scope": [
+				"aski.default.comment"
+			],
+			"settings": {
+				"foreground": "#569661b0"
+			}
+		}
+	]
+}

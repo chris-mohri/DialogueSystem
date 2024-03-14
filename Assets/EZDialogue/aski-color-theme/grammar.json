@@ -1,0 +1,38 @@
+{
+    "scopeName": "source.aski",
+    "patterns": [
+        {
+            "match": "\\.voice",
+            "name": "aski.default.voice"
+        }
+        ,
+        {
+            "match": "\\.func",
+            "name": "aski.default.commands"
+        }
+        ,
+        {
+            "match": "\\.label",
+            "name": "aski.default.label"
+        }
+        ,
+        {
+            "match": "\\.route",
+            "name": "aski.default.route"
+        }
+        ,
+        {
+            "match": "\\.say",
+            "name": "aski.default.say"
+        },
+        {
+            "match": "(.*)(?=\\.say)",
+            "name": "aski.default.char"
+        },
+        {
+            "match": "#.*",
+            "name": "aski.default.comment"
+        }
+        
+    ]
+}

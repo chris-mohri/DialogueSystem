@@ -1,23 +1,10 @@
 {
     "files.associations": {
-        "*.aski": "markdown"
+        "*.aski": "plaintext"
     },
-    "editor.tokenColorCustomizations": {
-        "textMateRules": [
-            {
-                "scope": "meta.paragraph.markdown",
-                "settings": {
-                    "foreground": "#e099b7" // Set color for specific regex pattern (blue)
-                }
-            }
-        ]
-    },
-    "editor.semanticTokenColorCustomizations": {
-        "enabled": true,
-        "rules": {
-            "string.regexp.label.mytxt": {
-                "foreground": "#0000FF" // Set color for specific regex pattern (blue)
-            }
-        }
-    }
+    "workbench.colorTheme": "Aski Color",
+
+    // "workbench.colorTheme": "Aski Color"
+    
+    //C:\Users\green\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\aski-color-theme\themes
 }
