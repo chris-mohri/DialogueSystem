@@ -133,7 +133,7 @@ public class EZDialogueSystem : MonoBehaviour
         currentCharIndex = textObj.text.Length;
 
         book = new Book(dialogueFolderPath);
-        book.LoadChapter("chapter1.txt");
+        book.LoadChapter("chapter1.aski");
         // book.Export();
     }
 
@@ -805,7 +805,7 @@ public class EZDialogueSystem : MonoBehaviour
                 filepath = Path.Combine(dialogueFolderPath+"JSONs/",file);
                 LoadAsJson(file);
 
-            } else if (extension == ".txt"){
+            } else if (extension == ".txt" || extension == ".aski"){
                 filename = file.Substring(0, file.IndexOf("."));
                 filepath = Path.Combine(dialogueFolderPath+"TEXTs/",file);
 
@@ -817,7 +817,7 @@ public class EZDialogueSystem : MonoBehaviour
                 pointer=0;
 
             } else {
-                throw new Exception("File type is neither .txt or .json");
+                throw new Exception("File type is neither .txt nor .aski nor .json");
             }
         }
 
@@ -1076,7 +1076,7 @@ public class EZDialogueSystem : MonoBehaviour
 
         //exports to text
         private void ExportToText(){
-            string newFile = filename+".txt";
+            string newFile = filename+".aski";
         
             //create directory if doesn't exist
             if (!Directory.Exists(textConvertFilePath)){
@@ -1125,7 +1125,7 @@ public class EZDialogueSystem : MonoBehaviour
         }
 
         public DialogueEntry GetCurrentEntry(){
-            if (extension == ".txt"){
+            if (extension == ".txt" || extension == ".aski"){
                 return currentEntry;
             }
             return null;
@@ -1133,7 +1133,7 @@ public class EZDialogueSystem : MonoBehaviour
 
         //gets the next entry and increments as needed
         public DialogueEntry GetNextEntryAndIncrement(){
-            if (extension == ".txt"){
+            if (extension == ".txt" || extension == ".aski"){
                 if (IsEnd()){
                     DialogueEntry entry = new DialogueEntry();
                     entry.dialogue = "REACHED END OF ROUTE";
@@ -1147,7 +1147,7 @@ public class EZDialogueSystem : MonoBehaviour
 
         public bool IsEnd(){
             RefreshLines();
-            if (extension == ".txt"){
+            if (extension == ".txt" || extension == ".aski"){
                 int tempPointer = pointer;
                 string line;
                 while (tempPointer < lines.Length){

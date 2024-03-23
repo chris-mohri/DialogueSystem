@@ -5,11 +5,12 @@
 	#.func Move(Aoko, x, y, t1, t2)
 
 	.say \nTheir conversation had moved from the drawing room to the sunroom, and had manifested into the kind of scene one would not expect in such a mansion.\n\n
+	.func Spawn("AliceObj", 0.7, .67, 0.0, 0.1)
 	
 .label happy
 	Aoko .say "To be honest, I didn't really want to leave it to Tobimaru like this."
 	.voice Aoko/chapter1/part1.mp3
-	.func c1_func1()
+	#.func c1_func1()
 
 	.say A hot, earthenware pot sat on the table.
 

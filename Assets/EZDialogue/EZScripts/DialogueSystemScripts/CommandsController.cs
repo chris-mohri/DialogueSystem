@@ -10,6 +10,10 @@ public partial class CommandsController : MonoBehaviour
 
     // [SerializeField] [Tooltip("Directory for where images are located")]
     // private string baseImgDirectory = "Assets/Images/"; 
+    [Tooltip("The basic prefab for sprites")]
+    public GameObject spritePrefab; 
+    [Tooltip("The GameObject that houses all the character sprites")]
+    public GameObject spriteAreaObj; 
 
     [SerializeField]  [Tooltip("The GameObject that has the image for the underline that appears when hovering over an option (can leave empty if not using the built-in choice menu)")]
     public GameObject UnderlineObj;
@@ -91,6 +95,11 @@ public partial class CommandsController : MonoBehaviour
 
         float xScreen = xPercent * Screen.width;
         float yScreen = yPercent * Screen.height;
+
+        Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(xScreen, yScreen, 0));
+        worldPos.z=0;
+
+        Instantiate(spritePrefab, worldPos, Quaternion.identity, spriteAreaObj.transform);
         
         //instantiate prefab
     }
